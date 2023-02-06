@@ -1,0 +1,26 @@
+{
+  "name": "trendData",
+  "version": "0.0.1",
+  "description": "trendData",
+  "main": "app.js",
+  "dependencies": {
+    "koa": "^2.11.0",
+    "koa-logger2": "^0.0.1",
+    "koa-router": "^8.0.8",
+    "log4js": "^6.4.4",
+    "md5": "^2.2.1",
+    "mongodb": "^2.2.10"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.18",
+    "@types/ws": "^8.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "contract"
+  ],
+  "author": "seatnumber",
+  "license": "ISC"
+}
