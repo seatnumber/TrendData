@@ -34,5 +34,9 @@ router.get('/account', async (ctx: any)=>{
             $sort: { profit: -1}
         }
      ] ).toArray()
-     ctx.body = result
+     ctx.response.type = 'json'
+     ctx.body = {
+         code: 10000,
+         result: result
+     }
 })
