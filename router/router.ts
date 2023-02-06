@@ -16,8 +16,7 @@ router.get('/account', async (ctx: any)=>{
         // Stage 2: Group remaining documents by pizza name and calculate total quantity
         {
            $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-           positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
-           sumObject:{$first:"$sumObject"}, account: {$first: "$account"}}
+           positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"}}
         },
         {
             $addFields: {
@@ -27,7 +26,7 @@ router.get('/account', async (ctx: any)=>{
         {
             $project: {
                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
-                leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account"
+                leverage:"$leverage",createtime:"$createtime"
             }
         },
         {
