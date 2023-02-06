@@ -4,7 +4,7 @@ router.get('/',async (ctx: any)=>{
     ctx.body="首页";
 })
 
-router.get('/account', async (ctx: any)=>{
+router.get('/profit', async (ctx: any)=>{
     let result = await global.mongodb.collection('account').aggregate( [
         // Stage 1: Filter pizza order documents by pizza size
         {
@@ -16,7 +16,7 @@ router.get('/account', async (ctx: any)=>{
         // Stage 2: Group remaining documents by pizza name and calculate total quantity
         {
            $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-           positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"}}
+           positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},owner:{$first:"$owner"}}
         },
         {
             $addFields: {
@@ -25,54 +25,27 @@ router.get('/account', async (ctx: any)=>{
         },
         {
             $project: {
-                profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
-                leverage:"$leverage",createtime:"$createtime"
+                profit:"$profit",owner:"$owner"
             }
         },
         {
             $sort: { profit: -1}
         }
      ] ).toArray()
-     ctx.response.type = 'json'
-     ctx.body = {
-         code: 10000,
-         result: result
+     let resultTrue: any = {
+         seatnumber: 0
      }
-})
-
-router.get('/accountDetail', async (ctx: any)=>{
-    let result = await global.mongodb.collection('account').aggregate( [
-        // Stage 1: Filter pizza order documents by pizza size
-        {
-           $match: {createtime:{$gte:new Date(Date.now() - 3600000)}}
-        },
-        {
-            $sort: { createtime: -1 }
-        },
-        // Stage 2: Group remaining documents by pizza name and calculate total quantity
-        {
-           $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-           positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
-           sumObject:{$first:"$sumObject"}, account: {$first: "$account"}}
-        },
-        {
-            $addFields: {
-                drawdown: { $subtract: ["$maxProfit","$profit"]}
-            }
-        },
-        {
-            $project: {
-                profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
-                leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account"
-            }
-        },
-        {
-            $sort: { profit: -1}
+     for(let i = 0;i<result.length;i++) {
+        let account = result[i]
+        if(account.owner == 'seatnumber') {
+            resultTrue.seatnumber += account.profit
         }
-     ] ).toArray()
+        resultTrue[account._id] = account.profit
+     }
      ctx.response.type = 'json'
      ctx.body = {
          code: 10000,
-         result: result
+         result: resultTrue,
+         updatetime: new Date()
      }
 })
