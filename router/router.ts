@@ -136,7 +136,6 @@ router.get('/accountList', async (ctx: any)=>{
 
 router.get('/accountDetail', async (ctx: any)=>{
     let { servicename } = ctx.query
-    console.log('ser: ', servicename)
     let matchContent: any
     if(servicename != 'seatnumber') {
         matchContent = {createtime:{$gte:new Date(Date.now() - 3600000)},servicename: servicename}
