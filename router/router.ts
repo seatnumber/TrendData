@@ -210,7 +210,7 @@ function getSeatnumberAccount(accountList: any[]) {
             askPercent: resultItem.askPercent,
             balance: 0
         }
-        if (resultItem.owner == 'seatnumber') {
+        if (resultItem.owner == 'seatnumber' && resultItem.account.USDT) {
             seatnumberAccount.profit += account.profit
             seatnumberAccount.bidPercent += account.bidPercent
             seatnumberAccount.askPercent += account.askPercent
