@@ -193,6 +193,7 @@ function getSeatnumberAccount(accountList: any[]) {
         profit: 0,
         bidPercent: 0,
         askPercent: 0,
+        positionValue: 0,
         balance: 0,
         position: []
     }
@@ -207,12 +208,14 @@ function getSeatnumberAccount(accountList: any[]) {
             profit: resultItem.profit,
             bidPercent: resultItem.bidPercent,
             askPercent: resultItem.askPercent,
+            positionValue: resultItem.positionValue,
             balance: 0
         }
         if (resultItem.owner == 'seatnumber' && resultItem.account.USDT) {
             seatnumberAccount.profit += account.profit
             seatnumberAccount.bidPercent += account.bidPercent
             seatnumberAccount.askPercent += account.askPercent
+            seatnumberAccount.positionValue += account.positionValue
             for (let key in resultItem.account) {
                 if (key != 'BNB') {
                     seatnumberAccount['balance'] += resultItem.account[key].marginBalance

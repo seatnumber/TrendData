@@ -1,0 +1,7 @@
+coverage
+img
+nohup.out
+.idea
+.DS_Store
+.vscode
+npm-debug.log
