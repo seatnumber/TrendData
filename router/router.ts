@@ -8,29 +8,31 @@ router.get('/profit', async (ctx: any)=>{
     let result = await global.mongodb.collection('account').aggregate( [
         // Stage 1: Filter pizza order documents by pizza size
         {
-           $match: {createtime:{$gte:new Date(Date.now() - 3600000)}}
-        },
-        {
-            $sort: { createtime: -1 }
-        },
-        // Stage 2: Group remaining documents by pizza name and calculate total quantity
-        {
-           $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-           positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},owner:{$first:"$owner"}}
-        },
-        {
-            $addFields: {
-                drawdown: { $subtract: ["$maxProfit","$profit"]}
-            }
-        },
-        {
-            $project: {
-                profit:"$profit",owner:"$owner",bidPercent:"$bidPercent",askPercent:"$askPercent"
-            }
-        },
-        {
-            $sort: { profit: -1}
-        }
+            $match: {createtime:{$gte:new Date(Date.now() - 3600000)}}
+         },
+         {
+             $sort: { createtime: -1 }
+         },
+         // Stage 2: Group remaining documents by pizza name and calculate total quantity
+         {
+            $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
+            positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
+            sumObject:{$first:"$sumObject"}, account: {$first: "$account"},owner:{$first:"$owner"}}
+         },
+         {
+             $addFields: {
+                 drawdown: { $subtract: ["$maxProfit","$profit"]}
+             }
+         },
+         {
+             $project: {
+                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
+                 leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account",owner:"$owner"
+             }
+         },
+         {
+             $sort: { profit: -1}
+         }
      ] ).toArray()
      let profit: any = {
          seatnumber: 0
@@ -41,22 +43,17 @@ router.get('/profit', async (ctx: any)=>{
      let askPercent: any = {
          seatnumber: 0
      }
-     let seatnumberCount = 0
+
+     let seatnumberAccount = getSeatnumberAccount(result)
      for(let i = 0;i<result.length;i++) {
         let account = result[i]
-        if(account.owner == 'seatnumber') {
-            profit.seatnumber += account.profit
-            bidPercent.seatnumber += account.bidPercent
-            askPercent.seatnumber += account.askPercent
-            seatnumberCount ++
-        }
         profit[account._id] = account.profit
         bidPercent[account._id] = account.bidPercent
         askPercent[account._id] = account.askPercent
      }
-
-     bidPercent.seatnumber /= seatnumberCount
-     askPercent.seatnumber /= seatnumberCount
+     profit.seatnumber = seatnumberAccount.profit
+     bidPercent.seatnumber = seatnumberAccount.bidPercent
+     askPercent.seatnumber = seatnumberAccount.askPercent
 
      ctx.response.type = 'json'
      ctx.body = {
