@@ -16,8 +16,8 @@ router.get('/profit', async (ctx: any)=>{
          // Stage 2: Group remaining documents by pizza name and calculate total quantity
          {
             $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-            positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
-            sumObject:{$first:"$sumObject"}, account: {$first: "$account"},owner:{$first:"$owner"}}
+            bidValue:{$first:"$bidValue"},askValue:{$first:"$askValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
+            sumObject:{$first:"$sumObject"}, account: {$first: "$account"}, owner: {$first: "$owner"}}
          },
          {
              $addFields: {
@@ -26,8 +26,8 @@ router.get('/profit', async (ctx: any)=>{
          },
          {
              $project: {
-                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
-                 leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account",owner:"$owner"
+                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",bidValue:"$bidValue",askValue:"$askValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
+                 leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account", owner: "$owner"
              }
          },
          {
@@ -68,7 +68,6 @@ router.get('/profit', async (ctx: any)=>{
 router.get('/accountList', async (ctx: any)=>{
     try {
         let result = await global.mongodb.collection('account').aggregate( [
-            // Stage 1: Filter pizza order documents by pizza size
             {
                 $match: {createtime:{$gte:new Date(Date.now() - 3600000)}}
              },
@@ -78,8 +77,8 @@ router.get('/accountList', async (ctx: any)=>{
              // Stage 2: Group remaining documents by pizza name and calculate total quantity
              {
                 $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-                positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
-                sumObject:{$first:"$sumObject"}, account: {$first: "$account"},owner:{$first:"$owner"}}
+                bidValue:{$first:"$bidValue"},askValue:{$first:"$askValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
+                sumObject:{$first:"$sumObject"}, account: {$first: "$account"}, owner: {$first: "$owner"}}
              },
              {
                  $addFields: {
@@ -88,8 +87,8 @@ router.get('/accountList', async (ctx: any)=>{
              },
              {
                  $project: {
-                     profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
-                     leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account",owner:"$owner"
+                     profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",bidValue:"$bidValue",askValue:"$askValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
+                     leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account", owner: "$owner"
                  }
              },
              {
@@ -105,6 +104,8 @@ router.get('/accountList', async (ctx: any)=>{
                  profit: resultItem.profit,
                  bidPercent: resultItem.bidPercent,
                  askPercent: resultItem.askPercent,
+                 bidValue: resultItem.bidValue,
+                 askValue: resultItem.askValue,
                  balance: 0
              }
              for(let key in resultItem.account) {
@@ -140,9 +141,8 @@ router.get('/accountDetail', async (ctx: any)=>{
         matchContent = {createtime:{$gte:new Date(Date.now() - 3600000)}}
     }
     let result = await global.mongodb.collection('account').aggregate( [
-        // Stage 1: Filter pizza order documents by pizza size
         {
-            $match: matchContent
+            $match: {createtime:{$gte:new Date(Date.now() - 3600000)}}
          },
          {
              $sort: { createtime: -1 }
@@ -150,8 +150,8 @@ router.get('/accountDetail', async (ctx: any)=>{
          // Stage 2: Group remaining documents by pizza name and calculate total quantity
          {
             $group: { _id: "$servicename", profit:{$first: "$profit"}, bidPercent: {$first:"$bidPercent"}, askPercent: {$first:"$askPercent"},
-            positionValue:{$first:"$positionValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
-            sumObject:{$first:"$sumObject"}, account: {$first: "$account"},owner:{$first:"$owner"}}
+            bidValue:{$first:"$bidValue"},askValue:{$first:"$askValue"},maxProfit:{$first:"$maxProfit"},maxDrawdown:{$first:"$maxDrawdown"},leverage:{$first:"$leverage"},createtime:{$first: "$createtime"},position: {$first: "$position"},
+            sumObject:{$first:"$sumObject"}, account: {$first: "$account"}, owner: {$first: "$owner"}}
          },
          {
              $addFields: {
@@ -160,8 +160,8 @@ router.get('/accountDetail', async (ctx: any)=>{
          },
          {
              $project: {
-                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",positionValue:"$positionValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
-                 leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account",owner:"$owner"
+                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",bidValue:"$bidValue",askValue:"$askValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
+                 leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account", owner: "$owner"
              }
          },
          {
@@ -190,7 +190,8 @@ function getSeatnumberAccount(accountList: any[]) {
         profit: 0,
         bidPercent: 0,
         askPercent: 0,
-        positionValue: 0,
+        bidValue: 0,
+        askValue: 0,
         balance: 0,
         position: []
     }
@@ -205,14 +206,16 @@ function getSeatnumberAccount(accountList: any[]) {
             profit: resultItem.profit,
             bidPercent: resultItem.bidPercent,
             askPercent: resultItem.askPercent,
-            positionValue: resultItem.positionValue,
+            bidValue: resultItem.bidValue,
+            askValue: resultItem.askValue,
             balance: 0
         }
         if (resultItem.owner == 'seatnumber' && resultItem.account.USDT) {
             seatnumberAccount.profit += account.profit
             seatnumberAccount.bidPercent += account.bidPercent
             seatnumberAccount.askPercent += account.askPercent
-            seatnumberAccount.positionValue += account.positionValue
+            seatnumberAccount.bidValue += account.bidValue
+            seatnumberAccount.askValue += account.askValue
             for (let key in resultItem.account) {
                 if (key != 'BNB') {
                     seatnumberAccount['balance'] += resultItem.account[key].marginBalance
