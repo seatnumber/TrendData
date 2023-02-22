@@ -142,7 +142,7 @@ router.get('/accountDetail', async (ctx: any)=>{
     }
     let result = await global.mongodb.collection('account').aggregate( [
         {
-            $match: {createtime:{$gte:new Date(Date.now() - 3600000)}}
+            $match: matchContent
          },
          {
              $sort: { createtime: -1 }
