@@ -170,7 +170,11 @@ router.get('/accountDetail', async (ctx: any)=>{
      ] ).toArray()
      if(servicename != 'seatnumber') {
         result[0].position.sort(function(a: any,b: any) {
-            return Math.abs(a.profit) > Math.abs(b.profit)? -1 : 1
+            if(a.maxBaseSize) {
+                return Math.abs(a.maxBaseSize) > Math.abs(b.maxBaseSize)? -1 : 1
+            } else {
+                return Math.abs(a.baseSize) > Math.abs(b.baseSize)? -1 : 1
+            }
         })
         ctx.body = {
             code: 10000,
@@ -180,7 +184,11 @@ router.get('/accountDetail', async (ctx: any)=>{
      } else {
          let seatnumberAccount = getSeatnumberAccount(result)
          seatnumberAccount.position.sort(function(a: any,b: any) {
-            return Math.abs(a.profit) > Math.abs(b.profit)? -1 : 1
+            if(a.maxBaseSize) {
+                return Math.abs(a.maxBaseSize) > Math.abs(b.maxBaseSize)? -1 : 1
+            } else {
+                return Math.abs(a.baseSize) > Math.abs(b.baseSize)? -1 : 1
+            }
         })
          ctx.body = {
             code: 10000,
