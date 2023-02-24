@@ -169,6 +169,9 @@ router.get('/accountDetail', async (ctx: any)=>{
          }
      ] ).toArray()
      if(servicename != 'seatnumber') {
+        result[0].position.sort(function(a: any,b: any) {
+            return Math.abs(a.profit) > Math.abs(b.profit)? -1 : 1
+        })
         ctx.body = {
             code: 10000,
             result: result,
@@ -176,6 +179,9 @@ router.get('/accountDetail', async (ctx: any)=>{
         }
      } else {
          let seatnumberAccount = getSeatnumberAccount(result)
+         seatnumberAccount.position.sort(function(a: any,b: any) {
+            return Math.abs(a.profit) > Math.abs(b.profit)? -1 : 1
+        })
          ctx.body = {
             code: 10000,
             result: [seatnumberAccount],
