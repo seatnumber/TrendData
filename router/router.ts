@@ -237,11 +237,13 @@ function getSeatnumberAccount(accountList: any[]) {
             }
             for (let item of resultItem.position) {
                 if (position[item.symbol] == undefined) {
-                    position[item.symbol] = { symbol: item.symbol, profit: item.profit, baseSize: item.baseSize, midRate: item.midRate, size: item.size }
+                    position[item.symbol] = { symbol: item.symbol, profit: item.profit, baseSize: item.baseSize, 
+                        midRate: item.midRate, size: item.size, maxBaseSize: item.maxBaseSize }
                 } else {
                     position[item.symbol].profit += item.profit
                     position[item.symbol].baseSize += item.baseSize
                     position[item.symbol].size += item.size
+                    position[item.symbol].maxBaseSize += item.maxBaseSize
                 }
             }
             seatnumberCount++
