@@ -25,14 +25,14 @@
     <table id="accountTable">
         <thead>
             <tr>
-                <th>服务名称</th>
-                <th>利润</th>
-                <th>投标百分比</th>
-                <th>要约百分比</th>
-                <th>投标价值</th>
-                <th>要约价值</th>
-                <th>余额</th>
-            </tr>
+                <th>servicename</th>
+                <th>profit</th>
+                <th>bidPercent</th>
+                <th>askPercent</th>
+                <th>bidValue</th>
+                <th>askValue</th>
+                <th>balance</th>
+              </tr>
         </thead>
         <tbody>
         </tbody>
@@ -45,21 +45,30 @@
         }
 
         function displayAccountList(result) {
-            const tableBody = document.querySelector("#accountTable tbody");
-            tableBody.innerHTML = '';
+                const tableBody = document.querySelector("#accountTable tbody");
+                tableBody.innerHTML = '';
 
-            result.forEach(account => {
-                const row = document.createElement("tr");
+                result.forEach(account => {
+                    const row = document.createElement("tr");
 
-                for (const property in account) {
-                    const cell = document.createElement("td");
-                    cell.textContent = account[property];
-                    row.appendChild(cell);
-                }
+                    for (const property in account) {
+                        const cell = document.createElement("td");
 
-                tableBody.appendChild(row);
-            });
-        }
+                        // 如果字段值为数字，则保留四位小数
+                        if (typeof account[property] === 'number') {
+                            cell.textContent = account[property].toFixed(4);
+                        } else {
+                            cell.textContent = account[property];
+                        }
+
+                        row.appendChild(cell);
+                    }
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+
 
         async function loadData() {
             const data = await fetchAccountList();

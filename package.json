@@ -4,6 +4,9 @@
   "description": "trendData",
   "main": "app.js",
   "dependencies": {
+    "@types/koa": "^2.13.5",
+    "@types/koa-router": "^7.4.4",
+    "@types/koa-static": "^4.0.2",
     "koa": "^2.11.0",
     "koa-logger2": "^0.0.1",
     "koa-router": "^8.0.8",
@@ -13,7 +16,7 @@
     "mongodb": "^2.2.10"
   },
   "devDependencies": {
-    "@types/node": "^17.0.18",
+    "@types/node": "^17.0.45",
     "@types/ws": "^8.5.1"
   },
   "scripts": {
