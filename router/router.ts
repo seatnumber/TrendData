@@ -1,8 +1,5 @@
 
 export const router = require('koa-router')();
-router.get('/',async (ctx: any)=>{
-    ctx.body="首页";
-})
 
 router.get('/profit', async (ctx: any)=>{
     let result = await global.mongodb.collection('account').aggregate( [
