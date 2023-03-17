@@ -64,42 +64,30 @@
             return data;
         }
 
-        function displayAccountList(result) {
-                const tableBody = document.querySelector("#accountTable tbody");
-                tableBody.innerHTML = '';
+        function displayAccountList(data) {
+                let content = '';
 
-                result.forEach(account => {
-                    const row = document.createElement("tr");
-
-                    for (const property in account) {
-                        const cell = document.createElement("td");
-
-                        // 如果字段值为数字，则保留四位小数
-                        if (typeof account[property] === 'number') {
-                            cell.textContent = account[property].toFixed(4);
-                        } else {
-                            cell.textContent = account[property];
-                        }
-
-                        row.appendChild(cell);
-                    }
-
-                    row.style.cursor = 'pointer';
-                    row.addEventListener('click', () => {
-                        window.location.href = `/account_detail?servicename=${account.servicename}`;
-                    });
-
-
-                    tableBody.appendChild(row);
+                data.result.forEach((item) => {
+                    content += `
+      <tr>
+        <td><a href="account_detail.html?servicename=${item.servicename}">${item.servicename}</a></td>
+        <td>${item.profit.toFixed(4)}</td>
+        <td>${item.bidPercent.toFixed(4)}</td>
+        <td>${item.askPercent.toFixed(4)}</td>
+        <td>${item.bidValue.toFixed(4)}</td>
+        <td>${item.askValue.toFixed(4)}</td>
+        <td>${item.balance.toFixed(4)}</td>
+      </tr>
+    `;
                 });
+                console.log('content: ',content)
+                document.querySelector('#accountList tbody').innerHTML = content;
             }
-
-
 
         async function loadData() {
             const data = await fetchAccountList();
             if (data.code === 10000) {
-                displayAccountList(data.result);
+                displayAccountList(data);
             } else {
                 console.error("请求失败");
             }
