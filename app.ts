@@ -20,11 +20,11 @@ async function startUp() {
   // Default route
   router.get('/', async (ctx: any) => {
     ctx.type = 'text/html';
-    ctx.body = accountListHTML.replace('SERVER_IP', process.env.SERVER_IP || '35.74.231.172');
+    ctx.body = accountListHTML.replace('SERVER_IP', process.env.SERVER_IP || '127.0.0.1');
   });
   router.get('/account_detail', async (ctx: any) => {
     ctx.type = 'text/html';
-    ctx.body = accountDetailHTML.replace('SERVER_IP', process.env.SERVER_IP || '35.74.231.172');
+    ctx.body = accountDetailHTML.replace('SERVER_IP', process.env.SERVER_IP || '127.0.0.1');
   });
 
   app.use(router.routes());

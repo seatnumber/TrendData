@@ -4,45 +4,29 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>账号列表</title>
+    <title>Account List</title>
     <style>
         table {
             border-collapse: collapse;
             width: 100%;
         }
-    
-        th,
-        td {
+        th, td {
             border: 1px solid black;
             padding: 8px;
             text-align: left;
         }
-    
         th {
             background-color: #f2f2f2;
         }
-    
-        /* 响应式设计 */
-        @media screen and (max-width: 600px) {
-            table {
-                font-size: 14px;
-                width: 100%;
-            }
-    
-            th,
-            td {
-                padding: 4px;
-            }
-    
-            h1 {
-                font-size: 24px;
-            }
+        .servicename {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <h1>账号列表</h1>
-    <table id="accountTable">
+    <table id="accountList">
         <thead>
             <tr>
                 <th>servicename</th>
@@ -52,7 +36,7 @@
                 <th>bidValue</th>
                 <th>askValue</th>
                 <th>balance</th>
-              </tr>
+            </tr>
         </thead>
         <tbody>
         </tbody>
@@ -65,35 +49,35 @@
         }
 
         function displayAccountList(data) {
-                let content = '';
+            const content = data.result.reduce((accumulator, item) => {
+                return accumulator + `
+                    <tr>
+                        <td class="servicename" onclick="window.location.href='account_detail?servicename=${item.servicename}'">${item.servicename}</td>
+                        <td>${item.profit.toFixed(4)}</td>
+                        <td>${item.bidPercent.toFixed(4)}</td>
+                        <td>${item.askPercent.toFixed(4)}</td>
+                        <td>${item.bidValue.toFixed(4)}</td>
+                        <td>${item.askValue.toFixed(4)}</td>
+                        <td>${item.balance.toFixed(4)}</td>
+                    </tr>
+                `;
+            }, "");
 
-                data.result.forEach((item) => {
-                    content += `
-      <tr>
-        <td><a href="account_detail.html?servicename=${item.servicename}">${item.servicename}</a></td>
-        <td>${item.profit.toFixed(4)}</td>
-        <td>${item.bidPercent.toFixed(4)}</td>
-        <td>${item.askPercent.toFixed(4)}</td>
-        <td>${item.bidValue.toFixed(4)}</td>
-        <td>${item.askValue.toFixed(4)}</td>
-        <td>${item.balance.toFixed(4)}</td>
-      </tr>
-    `;
-                });
-                console.log('content: ',content)
-                document.querySelector('#accountList tbody').innerHTML = content;
-            }
-
-        async function loadData() {
-            const data = await fetchAccountList();
-            if (data.code === 10000) {
-                displayAccountList(data);
-            } else {
-                console.error("请求失败");
-            }
+            document.querySelector("#accountList tbody").innerHTML = content;
         }
 
-        loadData();
+        document.addEventListener("DOMContentLoaded", function () {
+            async function loadData() {
+                const data = await fetchAccountList();
+                if (data.code === 10000) {
+                    displayAccountList(data);
+                } else {
+                    console.error("请求失败");
+                }
+            }
+
+            loadData();
+        });
     </script>
 </body>
 </html>
