@@ -8,6 +8,8 @@ import * as mongoconnect from './middleware/connectMongo';
 
 const app = new Koa();
 const accountListHTML = fs.readFileSync(path.join(__dirname, 'public', 'account_list.html'), 'utf8');
+const accountDetailHTML = fs.readFileSync(path.join(__dirname, 'public', 'account_detail.html'), 'utf8');
+
 
 async function startUp() {
   global.mongodb = await mongoconnect.connect(config.mongohost, config.database);
@@ -19,6 +21,10 @@ async function startUp() {
   router.get('/', async (ctx: any) => {
     ctx.type = 'text/html';
     ctx.body = accountListHTML.replace('SERVER_IP', process.env.SERVER_IP || '35.74.231.172');
+  });
+  router.get('/account_detail', async (ctx: any) => {
+    ctx.type = 'text/html';
+    ctx.body = accountDetailHTML.replace('SERVER_IP', process.env.SERVER_IP || '35.74.231.172');
   });
 
   app.use(router.routes());

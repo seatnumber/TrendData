@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Detail</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="servicename" class="center"></h1>
+    <table id="accountSummary">
+        <thead>
+            <tr>
+                <th>profit</th>
+                <th>bidPercent</th>
+                <th>askPercent</th>
+                <th>bidValue</th>
+                <th>askValue</th>
+                <th>balance</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <h2>Positions</h2>
+    <table id="positionTable">
+        <thead>
+            <tr>
+                <th>symbol</th>
+                <th>profit</th>
+                <th>baseSize</th>
+                <th>midRate</th>
+                <th>size</th>
+                <th>maxBaseSize</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const servicename = urlParams.get('servicename');
+
+        async function fetchAccountDetail() {
+            const response = await fetch(`http://SERVER_IP:8081/accountDetail?servicename=${servicename}`);
+            const data = await response.json();
+            return data;
+        }
+
+        function displayAccountDetail(result) {
+            document.querySelector("#servicename").textContent = result.servicename;
+
+            const summaryTableBody = document.querySelector("#accountSummary tbody");
+            const summaryRow = document.createElement("tr");
+
+            ["profit", "bidPercent", "askPercent", "bidValue", "askValue", "balance"].forEach(key => {
+                const cell = document.createElement("td");
+                cell.textContent = result[key].toFixed(4);
+                summaryRow.appendChild(cell);
+            });
+
+            summaryTableBody.appendChild(summaryRow);
+
+            const positionTableBody = document.querySelector("#positionTable tbody");
+            result.position.forEach(item => {
+                const row = document.createElement("tr");
+
+                for (const key in item) {
+                    const cell = document.createElement("td");
+                    cell.textContent = (typeof item[key] === 'number') ? item[key].toFixed(4) : item[key];
+                    row.appendChild(cell);
+                }
+
+                positionTableBody.appendChild(row);
+            });
+        }
+
+        async function loadData() {
+            const data = await fetchAccountDetail();
+            if (data.code === 10000) {
+                displayAccountDetail(data.result[0]);
+            } else {
+                console.error("请求失败");
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
