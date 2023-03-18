@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,19 +11,24 @@
             border-collapse: collapse;
             width: 100%;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid black;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .center {
             text-align: center;
         }
     </style>
 </head>
+
 <body>
     <h1 id="servicename" class="center"></h1>
     <table id="accountSummary">
@@ -49,6 +55,8 @@
                 <th>midRate</th>
                 <th>size</th>
                 <th>maxBaseSize</th>
+                <th>closeRate</th>
+                <th>size</th>
             </tr>
         </thead>
         <tbody>
@@ -72,7 +80,7 @@
 
             ["profit", "bidPercent", "askPercent", "bidValue", "askValue", "balance"].forEach(key => {
                 const cell = document.createElement("td");
-                cell.textContent = result[key].toFixed(4);
+                cell.textContent = result[key] != undefined? result[key].toFixed(4): 'error';
                 summaryRow.appendChild(cell);
             });
 
@@ -84,7 +92,15 @@
 
                 for (const key in item) {
                     const cell = document.createElement("td");
-                    cell.textContent = (typeof item[key] === 'number') ? item[key].toFixed(4) : item[key];
+                    const value = (typeof item[key] === 'number') ? item[key].toFixed(4) : item[key];
+                    cell.textContent = value;
+
+                    if (key === 'symbol' && typeof item.maxBaseSize === 'number') {
+                        cell.style.color = item.maxBaseSize > 0 ? '#00CC00' : 'red';
+                    } else if (key === 'profit' && typeof item[key] === 'number') {
+                        cell.style.color = item[key] > 0 ? '#00CC00' : 'red';
+                    }
+
                     row.appendChild(cell);
                 }
 
@@ -104,4 +120,5 @@
         loadData();
     </script>
 </body>
+
 </html>

@@ -157,7 +157,7 @@ router.get('/accountDetail', async (ctx: any)=>{
          },
          {
              $project: {
-                 profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",bidValue:"$bidValue",askValue:"$askValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
+                 servicename:"$_id",profit:"$profit",drawdown: "$drawdown",bidPercent:"$bidPercent",askPercent:"$askPercent",bidValue:"$bidValue",askValue:"$askValue",maxProfit:"$maxProfit",maxDrawdown:"$maxDrawdown",
                  leverage:"$leverage",createtime:"$createtime",position:"$position",sumObject:"$sumObject",account:"$account", owner: "$owner"
              }
          },
@@ -173,6 +173,15 @@ router.get('/accountDetail', async (ctx: any)=>{
                 return Math.abs(a.baseSize) > Math.abs(b.baseSize)? -1 : 1
             }
         })
+        for(let i = 0; i < result.length; i++) {
+            let resultItem = result[i]
+            resultItem.balance = 0
+            for(let key in resultItem.account) {
+                if(key != 'BNB') {
+                    resultItem['balance'] += resultItem.account[key].marginBalance
+                }
+            }
+        }
         ctx.body = {
             code: 10000,
             result: result,
