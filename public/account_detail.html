@@ -41,6 +41,10 @@
         <tbody>
         </tbody>
     </table>
+    <h2>Summaries</h2>
+    <table id="summariesTable">
+
+    </table>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const servicename = urlParams.get('servicename');
@@ -66,7 +70,7 @@
 
             // Create accountSummary table header and row
             for (const key in result) {
-                if (key !== "position") {
+                if (key !== "position" && key !='sumObject' && key !='account' && key !='createtime') {
                     const header = document.createElement("th");
                     header.textContent = key;
                     summaryTableHead.appendChild(header);
@@ -111,6 +115,43 @@
 
                 positionTableBody.appendChild(row);
             });
+
+            if (result.hasOwnProperty('sumObject')) {
+                const summariesTable = document.querySelector("#summariesTable");
+                const summariesTableHead = summariesTable.createTHead();
+                const summariesTableBody = summariesTable.createTBody();
+
+                // Create summariesTable header
+                const headerRow = document.createElement("tr");
+                const keyHeader = document.createElement("th");
+                keyHeader.textContent = "Key";
+                headerRow.appendChild(keyHeader);
+                for (const key in result.sumObject.all) {
+                    const header = document.createElement("th");
+                    header.textContent = key;
+                    headerRow.appendChild(header);
+                }
+                summariesTableHead.appendChild(headerRow);
+
+                // Create summariesTable body
+                for (const summaryKey in result.sumObject) {
+                    const row = document.createElement("tr");
+                    const keyCell = document.createElement("td");
+                    keyCell.textContent = summaryKey;
+                    row.appendChild(keyCell);
+                    const summaryObj = result.sumObject[summaryKey];
+
+                    for (const key in result.sumObject.all) {
+                        const cell = document.createElement("td");
+                        const value = (typeof summaryObj[key] === 'number') ? summaryObj[key].toFixed(4) : "";
+                        cell.textContent = value;
+                        row.appendChild(cell);
+                    }
+
+                    summariesTableBody.appendChild(row);
+                }
+            }
+
         }
 
         async function loadData() {

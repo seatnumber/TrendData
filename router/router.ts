@@ -209,6 +209,7 @@ function getSeatnumberAccount(accountList: any[]) {
     let seatnumberAccount: any = {
         servicename: 'seatnumber',
         profit: 0,
+        drawdown: 0,
         bidPercent: 0,
         askPercent: 0,
         bidValue: 0,
