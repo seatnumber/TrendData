@@ -31,34 +31,13 @@
 
 <body>
     <h1 id="servicename" class="center"></h1>
+    <p id="loadingMessage">加载中...</p>
     <table id="accountSummary">
-        <thead>
-            <tr>
-                <th>profit</th>
-                <th>bidPercent</th>
-                <th>askPercent</th>
-                <th>bidValue</th>
-                <th>askValue</th>
-                <th>balance</th>
-            </tr>
-        </thead>
         <tbody>
         </tbody>
     </table>
     <h2>Positions</h2>
     <table id="positionTable">
-        <thead>
-            <tr>
-                <th>symbol</th>
-                <th>profit</th>
-                <th>baseSize</th>
-                <th>midRate</th>
-                <th>size</th>
-                <th>maxBaseSize</th>
-                <th>closeRate</th>
-                <th>size</th>
-            </tr>
-        </thead>
         <tbody>
         </tbody>
     </table>
@@ -74,19 +53,45 @@
 
         function displayAccountDetail(result) {
             document.querySelector("#servicename").textContent = result.servicename;
-
-            const summaryTableBody = document.querySelector("#accountSummary tbody");
+            const summaryTable = document.querySelector("#accountSummary");
+            const summaryTableHead = summaryTable.createTHead();
+            const summaryTableBody = summaryTable.createTBody();
             const summaryRow = document.createElement("tr");
 
-            ["profit", "bidPercent", "askPercent", "bidValue", "askValue", "balance"].forEach(key => {
-                const cell = document.createElement("td");
-                cell.textContent = result[key] != undefined? result[key].toFixed(4): 'error';
-                summaryRow.appendChild(cell);
-            });
+            const positionTable = document.querySelector("#positionTable");
+            const positionTableHead = positionTable.createTHead();
+            const positionTableHeaderRow = document.createElement("tr");
+
+            const positionTableBody = positionTable.createTBody();
+
+            // Create accountSummary table header and row
+            for (const key in result) {
+                if (key !== "position") {
+                    const header = document.createElement("th");
+                    header.textContent = key;
+                    summaryTableHead.appendChild(header);
+
+                    const cell = document.createElement("td");
+                    const value = (typeof result[key] === 'number') ? result[key].toFixed(4) : result[key];
+                    cell.textContent = value;
+                    summaryRow.appendChild(cell);
+                }
+            }
 
             summaryTableBody.appendChild(summaryRow);
 
-            const positionTableBody = document.querySelector("#positionTable tbody");
+            // Create positionTable table header
+            if (result.position.length > 0) {
+                for (const key in result.position[0]) {
+                    const header = document.createElement("th");
+                    header.textContent = key;
+                    positionTableHeaderRow.appendChild(header);
+                }
+
+                positionTableHead.appendChild(positionTableHeaderRow);
+            }
+
+            // Create positionTable table body
             result.position.forEach(item => {
                 const row = document.createElement("tr");
 
@@ -96,9 +101,9 @@
                     cell.textContent = value;
 
                     if (key === 'symbol' && typeof item.maxBaseSize === 'number') {
-                        cell.style.color = item.maxBaseSize > 0 ? '#00CC00' : 'red';
+                        cell.style.color = item.maxBaseSize > 0 ? '#008000' : 'red';
                     } else if (key === 'profit' && typeof item[key] === 'number') {
-                        cell.style.color = item[key] > 0 ? '#00CC00' : 'red';
+                        cell.style.color = item[key] > 0 ? '#008000' : 'red';
                     }
 
                     row.appendChild(cell);
@@ -109,11 +114,17 @@
         }
 
         async function loadData() {
+            // Show the loading message 
+            const loadingMessageElement = document.querySelector("#loadingMessage");
+            loadingMessageElement.textContent = "加载中...";
+            loadingMessageElement.style.display = "block";
             const data = await fetchAccountDetail();
             if (data.code === 10000) {
+                // Hide the loading message
+                loadingMessageElement.style.display = "none";
                 displayAccountDetail(data.result[0]);
             } else {
-                console.error("请求失败");
+                loadingMessageElement.textContent = "请求失败";
             }
         }
 

@@ -26,20 +26,8 @@
     </style>
 </head>
 <body>
+    <p id="loadingMessage">加载中...</p>
     <table id="accountList">
-        <thead>
-            <tr>
-                <th>servicename</th>
-                <th>profit</th>
-                <th>bidPercent</th>
-                <th>askPercent</th>
-                <th>bidValue</th>
-                <th>askValue</th>
-                <th>balance</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
     </table>
     <script>
         async function fetchAccountList() {
@@ -49,30 +37,47 @@
         }
 
         function displayAccountList(data) {
-            const content = data.result.reduce((accumulator, item) => {
-                return accumulator + `
-                    <tr>
-                        <td class="servicename" onclick="window.location.href='account_detail?servicename=${item.servicename}'">${item.servicename}</td>
-                        <td>${item.profit.toFixed(4)}</td>
-                        <td>${item.bidPercent.toFixed(4)}</td>
-                        <td>${item.askPercent.toFixed(4)}</td>
-                        <td>${item.bidValue.toFixed(4)}</td>
-                        <td>${item.askValue.toFixed(4)}</td>
-                        <td>${item.balance.toFixed(4)}</td>
-                    </tr>
-                `;
-            }, "");
+            const accountList = document.querySelector("#accountList");
+            const accountListHead = accountList.createTHead();
+            const headerRow = accountListHead.insertRow();
 
-            document.querySelector("#accountList tbody").innerHTML = content;
+            if (data.result.length > 0) {
+                const firstItem = data.result[0];
+                for (const key in firstItem) {
+                    const th = document.createElement("th");
+                    th.textContent = key;
+                    headerRow.appendChild(th);
+                }
+            }
+
+            const accountListBody = accountList.createTBody();
+
+            data.result.forEach(item => {
+                const row = accountListBody.insertRow();
+                Object.keys(item).forEach(key => {
+                    const cell = row.insertCell();
+                    if (key === 'servicename') {
+                        cell.innerHTML = `<a href="javascript:void(0)" onclick="window.location.href='account_detail?servicename=${item.servicename}'">${item.servicename}</a>`;
+                    } else {
+                        cell.textContent = (typeof item[key] === 'number') ? item[key].toFixed(4) : item[key];
+                    }
+                });
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
             async function loadData() {
+                const loadingMessageElement = document.querySelector("#loadingMessage");
+                loadingMessageElement.textContent = "加载中...";
+                loadingMessageElement.style.display = "block";
                 const data = await fetchAccountList();
                 if (data.code === 10000) {
                     displayAccountList(data);
+
+                    // Hide the loading message
+                    document.querySelector("#loadingMessage").style.display = "none";
                 } else {
-                    console.error("请求失败");
+                    loadingMessageElement.textContent = "请求失败";
                 }
             }
 

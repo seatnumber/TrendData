@@ -99,6 +99,7 @@ router.get('/accountList', async (ctx: any)=>{
              let account = {
                  servicename: resultItem._id,
                  profit: resultItem.profit,
+                 drawdown: resultItem.drawdown,
                  bidPercent: resultItem.bidPercent,
                  askPercent: resultItem.askPercent,
                  bidValue: resultItem.bidValue,

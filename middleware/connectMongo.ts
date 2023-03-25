@@ -7,10 +7,10 @@ export function connect(url: string,database: string) {
     return new Promise(function (resolve, reject) {
         MongoClient.connect(url,function (err: any,db: any) {
             if (err) {
-                console.error("connect to mongo error,"+err.message);
+                console.error(new Date(), "connect to mongo error,"+err.message);
                 reject(err)
             } else {
-                console.log("connect to mongo success,");
+                console.log(new Date(), "connect to mongo success,");
                 let mongodb = db.db(database);
                 resolve(mongodb)
             }
