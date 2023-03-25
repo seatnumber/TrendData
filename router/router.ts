@@ -99,17 +99,21 @@ router.get('/accountList', async (ctx: any)=>{
              let account = {
                  servicename: resultItem._id,
                  profit: resultItem.profit,
-                 drawdown: resultItem.drawdown,
                  bidPercent: resultItem.bidPercent,
                  askPercent: resultItem.askPercent,
                  bidValue: resultItem.bidValue,
                  askValue: resultItem.askValue,
-                 balance: 0
+                 balance: 0,
+                 holdPnl: 0,
+                 drawdown: resultItem.drawdown
              }
              for(let key in resultItem.account) {
                  if(key != 'BNB') {
                      account['balance'] += resultItem.account[key].marginBalance
                  }
+             }
+             for(let item of resultItem.position) {
+                account.holdPnl += item.profit
              }
              accountList.push(account)
          }
@@ -209,13 +213,14 @@ function getSeatnumberAccount(accountList: any[]) {
     let seatnumberAccount: any = {
         servicename: 'seatnumber',
         profit: 0,
-        drawdown: 0,
         bidPercent: 0,
         askPercent: 0,
         bidValue: 0,
         askValue: 0,
         balance: 0,
-        position: []
+        position: [],
+        holdPnl: 0,
+        drawdown: 0
     }
 
     let position: any = {}
@@ -253,6 +258,7 @@ function getSeatnumberAccount(accountList: any[]) {
                     position[item.symbol].size += item.size
                     position[item.symbol].maxBaseSize += item.maxBaseSize
                 }
+                seatnumberAccount.holdPnl += item.profit
             }
             seatnumberCount++
         }

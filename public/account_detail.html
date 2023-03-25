@@ -105,9 +105,9 @@
                     cell.textContent = value;
 
                     if (key === 'symbol' && typeof item.maxBaseSize === 'number') {
-                        cell.style.color = item.maxBaseSize > 0 ? '#008000' : 'red';
+                        cell.style.color = item.maxBaseSize > 0 ? '#00CC00' : 'red';
                     } else if (key === 'profit' && typeof item[key] === 'number') {
-                        cell.style.color = item[key] > 0 ? '#008000' : 'red';
+                        cell.style.color = item[key] > 0 ? '#00CC00' : 'red';
                     }
 
                     row.appendChild(cell);

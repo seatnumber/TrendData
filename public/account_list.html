@@ -60,6 +60,9 @@
                         cell.innerHTML = `<a href="javascript:void(0)" onclick="window.location.href='account_detail?servicename=${item.servicename}'">${item.servicename}</a>`;
                     } else {
                         cell.textContent = (typeof item[key] === 'number') ? item[key].toFixed(4) : item[key];
+                        if (key === 'holdPnl') {
+                            cell.style.color = item.holdPnl > 0 ? '#00CC00' : 'red';
+                        } 
                     }
                 });
             });
