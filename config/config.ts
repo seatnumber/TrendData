@@ -1,6 +1,6 @@
 export const config: Config = {
     processPath : __dirname+'/../',
-    version: 1.06,
+    version: 1.07,
     mongohost:process.env.mongohost ? process.env.mongohost : '',
     database:process.env.database ? process.env.database : ''
 }

@@ -103,8 +103,9 @@ router.get('/accountList', async (ctx: any)=>{
                  askPercent: resultItem.askPercent,
                  bidValue: resultItem.bidValue,
                  askValue: resultItem.askValue,
-                 balance: 0,
+                 leverage: resultItem.leverage,
                  holdPnl: 0,
+                 balance: 0,
                  drawdown: resultItem.drawdown
              }
              for(let key in resultItem.account) {
@@ -217,9 +218,10 @@ function getSeatnumberAccount(accountList: any[]) {
         askPercent: 0,
         bidValue: 0,
         askValue: 0,
-        balance: 0,
+        leverage: 0,
         position: [],
         holdPnl: 0,
+        balance: 0,
         drawdown: 0
     }
 
@@ -235,6 +237,7 @@ function getSeatnumberAccount(accountList: any[]) {
             askPercent: resultItem.askPercent,
             bidValue: resultItem.bidValue,
             askValue: resultItem.askValue,
+            leverage: resultItem.leverage,
             balance: 0
         }
         if (resultItem.owner == 'seatnumber' && resultItem.account.USDT) {
@@ -243,6 +246,7 @@ function getSeatnumberAccount(accountList: any[]) {
             seatnumberAccount.askPercent += account.askPercent
             seatnumberAccount.bidValue += account.bidValue
             seatnumberAccount.askValue += account.askValue
+            seatnumberAccount.leverage += account.leverage
             for (let key in resultItem.account) {
                 if (key != 'BNB') {
                     seatnumberAccount['balance'] += resultItem.account[key].marginBalance
@@ -272,6 +276,7 @@ function getSeatnumberAccount(accountList: any[]) {
     })
     seatnumberAccount.bidPercent /= seatnumberCount
     seatnumberAccount.askPercent /= seatnumberCount
+    seatnumberAccount.leverage /= seatnumberCount
     seatnumberAccount.position = positions
     return seatnumberAccount
 }
