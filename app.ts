@@ -24,7 +24,7 @@ async function startUp() {
   });
   router.get('/account_detail', async (ctx: any) => {
     ctx.type = 'text/html';
-    ctx.body = accountDetailHTML.replace('SERVER_IP', process.env.SERVER_IP || '127.0.0.1');
+    ctx.body = accountDetailHTML.replaceAll('SERVER_IP', process.env.SERVER_IP || '127.0.0.1');
   });
 
   app.use(router.routes());

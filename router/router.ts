@@ -280,3 +280,36 @@ function getSeatnumberAccount(accountList: any[]) {
     seatnumberAccount.position = positions
     return seatnumberAccount
 }
+
+router.get('/transactionList',async (ctx: any) => {
+    let { servicename } = ctx.query
+    let transactionList = await global.mongodb.collection('transaction').find({servicename: servicename},
+        {id:1, batchId:1, symbol: 1, status:1, direction: 1, baseSize: 1,
+            maxBaseSize: 1, openrate: 1, midrate: 1,opportunity:1,
+         pnl: 1, createtime: 1, endtime: 1 })
+        .limit(30).sort({createtime:-1}).toArray()
+    
+    let result = []
+    for(let transaction of transactionList) {
+        result.push({
+            id: transaction.id,
+            batchId: transaction.batchId,
+            symbol: transaction.symbol,
+            status: transaction.status,
+            direction: transaction.direction,
+            baseSize: transaction.baseSize,
+            maxBaseSize: transaction.maxBaseSize,
+            openRate: transaction.openrate,
+            midRate: transaction.midrate,
+            closeRate: transaction.opportunity.closeRate,
+            pnl: transaction.pnl,
+            createtime: transaction.createtime,
+            endtime: transaction.endtime
+        })
+    }
+    ctx.body = {
+        code: 10000,
+        result: result,
+        updatetime: new Date()
+    }
+})
