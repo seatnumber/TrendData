@@ -247,6 +247,9 @@
 
             const pnlCell = document.createElement("td");
             pnlCell.textContent = transaction.pnl.toFixed(2);
+            if(transaction.pnl != 0) {
+                pnlCell.style.color = transaction.pnl > 0 ? '#00CC00' : 'red';
+            }
             row.appendChild(pnlCell);
 
             const createTimeCell = document.createElement("td");
