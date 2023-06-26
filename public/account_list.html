@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,14 +11,18 @@
             border-collapse: collapse;
             width: 100%;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid black;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .servicename {
             cursor: pointer;
             color: blue;
@@ -25,13 +30,28 @@
         }
     </style>
 </head>
+
 <body>
     <p id="loadingMessage">加载中...</p>
     <table id="accountList">
     </table>
     <script>
-        async function fetchAccountList() {
-            const response = await fetch("http://SERVER_IP:8081/accountList");
+        // 获取密码的函数
+        function getPassword() {
+            let password = localStorage.getItem("password");
+            if (!password) {
+                password = prompt("请输入密码");
+                localStorage.setItem("password", password);
+            }
+            return password;
+        }
+        async function fetchAccountList(password) {
+            const response = await fetch("http://SERVER_IP:8081/accountList", {
+                method: "GET",
+                headers: {
+                    "x-password": password,
+                },
+            });
             const data = await response.json();
             return data;
         }
@@ -62,7 +82,7 @@
                         cell.textContent = (typeof item[key] === 'number') ? item[key].toFixed(4) : item[key];
                         if (key === 'holdPnl') {
                             cell.style.color = item.holdPnl > 0 ? '#00CC00' : 'red';
-                        } 
+                        }
                     }
                 });
             });
@@ -73,7 +93,8 @@
                 const loadingMessageElement = document.querySelector("#loadingMessage");
                 loadingMessageElement.textContent = "加载中...";
                 loadingMessageElement.style.display = "block";
-                const data = await fetchAccountList();
+                let password = getPassword()
+                const data = await fetchAccountList(password);
                 if (data.code === 10000) {
                     displayAccountList(data);
 
@@ -88,4 +109,5 @@
         });
     </script>
 </body>
+
 </html>

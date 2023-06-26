@@ -1,7 +1,21 @@
 
 export const router = require('koa-router')();
 
-router.get('/profit', async (ctx: any)=>{
+// 密码验证中间件
+const passwordAuthMiddleware = async (ctx: any, next: any) => {
+    const password = ctx.headers['x-password'];
+    const correctPassword = '150690'; // 将 "your_password" 替换为实际的密码
+  
+    if (password === correctPassword) {
+      await next(); // 密码验证通过，继续执行下一个中间件或路由处理程序
+    } else {
+      ctx.status = 401; // 密码验证失败，返回 401 Unauthorized 状态码
+      ctx.body = '密码错误';
+    }
+  };
+
+
+router.get('/profit',passwordAuthMiddleware, async (ctx: any)=>{
     let result = await global.mongodb.collection('account').aggregate( [
         // Stage 1: Filter pizza order documents by pizza size
         {
@@ -62,7 +76,7 @@ router.get('/profit', async (ctx: any)=>{
      }
 })
 
-router.get('/accountList', async (ctx: any)=>{
+router.get('/accountList',passwordAuthMiddleware, async (ctx: any)=>{
     try {
         let result = await global.mongodb.collection('account').aggregate( [
             {
@@ -135,7 +149,7 @@ router.get('/accountList', async (ctx: any)=>{
     
 })
 
-router.get('/accountDetail', async (ctx: any)=>{
+router.get('/accountDetail',passwordAuthMiddleware,  async (ctx: any)=>{
     let { servicename } = ctx.query
     let matchContent: any
     if(servicename != 'seatnumber') {
@@ -281,13 +295,23 @@ function getSeatnumberAccount(accountList: any[]) {
     return seatnumberAccount
 }
 
-router.get('/transactionList',async (ctx: any) => {
+router.get('/transactionList',passwordAuthMiddleware, async (ctx: any) => {
     let { servicename } = ctx.query
-    let transactionList = await global.mongodb.collection('transaction').find({servicename: servicename},
+    let query: any = {servicename: servicename,
+        createtime: {$gt: new Date(Date.now() - 172800000)}}
+    if(servicename == 'seatnumber') {
+        let serviceList = await global.mongodb.collection('serviceconfig').find({owner: 'seatnumber', status:'enable'}).toArray()
+        let servicenameList = []
+        for(let service of serviceList) {
+            servicenameList.push(service.servicename)
+        }
+        query = { servicename: {$in: servicenameList}, createtime: {$gt: new Date(Date.now() - 172800000)}}
+    }
+    let transactionList = await global.mongodb.collection('transaction').find( query,
         {id:1, batchId:1, symbol: 1, status:1, direction: 1, baseSize: 1,
             maxBaseSize: 1, openrate: 1, midrate: 1,opportunity:1,
          pnl: 1, createtime: 1, endtime: 1 })
-        .limit(30).sort({createtime:-1}).toArray()
+        .limit(200).sort({createtime:-1}).toArray()
     
     let result = []
     for(let transaction of transactionList) {
