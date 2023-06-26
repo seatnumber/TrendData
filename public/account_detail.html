@@ -265,6 +265,15 @@
                 changeCell.textContent = change.toFixed(2) + '%';
                 row.appendChild(changeCell);
 
+                if (transaction.endTime == undefined) {
+
+                    if (transaction.direction == 1) {
+                        transaction.pnl = transaction.baseSize * change / 100
+                    } else if (transaction.direction == 2) {
+                        transaction.pnl = -transaction.baseSize * change / 100
+                    }
+                }
+
                 const pnlCell = document.createElement("td");
                 pnlCell.textContent = transaction.pnl.toFixed(2);
                 if (transaction.pnl != 0) {
