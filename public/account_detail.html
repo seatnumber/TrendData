@@ -46,17 +46,15 @@
         <thead>
             <tr>
                 <th>symbol</th>
-                <th>direction</th>
-                <th>change</th>
                 <th>pnL</th>
                 <th>openRate</th>
+                <th>change</th>
                 <th>close</th>
                 <th>baseSize</th>
                 <th>createTime</th>
                 <th>endTime</th>
-                <th>status</th>
-                <th>id</th>
                 <th>batchId</th>
+                <th>id</th>
             </tr>
         </thead>
         <tbody id="transactionTableBody"></tbody>
@@ -236,7 +234,7 @@
             const day = date.getDate().toString().padStart(2, '0');
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
-            return `${month}/${day}_${hours}:${minutes}`;
+            return `${day}_${hours}:${minutes}`;
         }
 
         let transactionList = []
@@ -248,25 +246,27 @@
             // 根据显示完整列表的状态确定要显示的事务数量
             const numToShow = showFullList ? transactionList.length : 20;
 
+            const batchCut = servicename != 'seatnumber'
+
             for (let i = 0; i < numToShow && i < transactionList.length; i++) {
                 let transaction = transactionList[i]
                 const row = document.createElement("tr");
 
                 const symbolCell = document.createElement("td");
                 symbolCell.textContent = transaction.symbol;
+                if(transaction.endtime == undefined) {
+                    symbolCell.textContent += '~'
+                }
+                if(transaction.direction == 1) {
+                    symbolCell.style.color = '#00CC00'
+                } else {
+                    symbolCell.style.color = 'red'
+                }
                 row.appendChild(symbolCell);
 
-                const directionCell = document.createElement("td");
-                directionCell.textContent = transaction.direction;
-                row.appendChild(directionCell);
-
-                const changeCell = document.createElement("td");
                 let change = (transaction.midRate - transaction.openRate) / transaction.openRate * 100
-                changeCell.textContent = change.toFixed(2) + '%';
-                row.appendChild(changeCell);
 
-                if (transaction.endTime == undefined) {
-
+                if (transaction.endtime == undefined) {
                     if (transaction.direction == 1) {
                         transaction.pnl = transaction.baseSize * change / 100
                     } else if (transaction.direction == 2) {
@@ -284,6 +284,10 @@
                 const openRateCell = document.createElement("td");
                 openRateCell.textContent = transaction.openRate.toFixed(5);
                 row.appendChild(openRateCell);
+                
+                const changeCell = document.createElement("td");
+                changeCell.textContent = change.toFixed(2) + '%';
+                row.appendChild(changeCell);
 
                 const closeCell = document.createElement("td");
                 let close = (transaction.closeRate - transaction.openRate) / transaction.openRate * 100
@@ -302,18 +306,18 @@
                 endTimeCell.textContent = transaction.endtime ? formatTime(new Date(transaction.createtime).getTime()) : '';
                 row.appendChild(endTimeCell);
 
-                const statusCell = document.createElement("td");
-                statusCell.textContent = transaction.status;
-                row.appendChild(statusCell);
+                const batchIdCell = document.createElement("td");
+                if(batchCut) {
+                    batchIdCell.textContent = transaction.batchId.substring(servicename.length);
+                } else {
+                    batchIdCell.textContent = transaction.batchId;
+                }
+                row.appendChild(batchIdCell);
+                transactionTableBody.appendChild(row);
 
                 const idCell = document.createElement("td");
                 idCell.textContent = transaction.id;
                 row.appendChild(idCell);
-
-                const batchIdCell = document.createElement("td");
-                batchIdCell.textContent = transaction.batchId;
-                row.appendChild(batchIdCell);
-                transactionTableBody.appendChild(row);
             }
         }
 
