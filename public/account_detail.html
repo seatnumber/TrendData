@@ -48,8 +48,8 @@
                 <th>symbol</th>
                 <th>pnL</th>
                 <th>openRate</th>
-                <th>change</th>
-                <th>close</th>
+                <th>midRate</th>
+                <th>closeRate</th>
                 <th>baseSize</th>
                 <th>createTime</th>
                 <th>endTime</th>
@@ -62,7 +62,17 @@
     <button id="showMoreButton">显示更多</button>
     <h2>Summaries</h2>
     <table id="summariesTable">
-
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>bidSum</th>
+                <th>bidUsed</th>
+                <th>bidBalance</th>
+                <th>askSum</th>
+                <th>askUsed</th>
+                <th>askBalance</th>
+            </tr>
+        </thead>
     </table>
 
 
@@ -163,17 +173,17 @@
                 const summariesTableHead = summariesTable.createTHead();
                 const summariesTableBody = summariesTable.createTBody();
 
-                // Create summariesTable header
-                const headerRow = document.createElement("tr");
-                const keyHeader = document.createElement("th");
-                keyHeader.textContent = "Key";
-                headerRow.appendChild(keyHeader);
-                for (const key in result.sumObject.all) {
-                    const header = document.createElement("th");
-                    header.textContent = key;
-                    headerRow.appendChild(header);
-                }
-                summariesTableHead.appendChild(headerRow);
+                // // Create summariesTable header
+                // const headerRow = document.createElement("tr");
+                // const keyHeader = document.createElement("th");
+                // keyHeader.textContent = "Key";
+                // headerRow.appendChild(keyHeader);
+                // for (const key in result.sumObject.all) {
+                //     const header = document.createElement("th");
+                //     header.textContent = key;
+                //     headerRow.appendChild(header);
+                // }
+                // summariesTableHead.appendChild(headerRow);
 
                 // Create summariesTable body
                 for (const summaryKey in result.sumObject) {
@@ -183,12 +193,45 @@
                     row.appendChild(keyCell);
                     const summaryObj = result.sumObject[summaryKey];
 
-                    for (const key in result.sumObject.all) {
-                        const cell = document.createElement("td");
-                        const value = (typeof summaryObj[key] === 'number') ? summaryObj[key].toFixed(4) : "";
-                        cell.textContent = value;
-                        row.appendChild(cell);
-                    }
+                    const bidSumCell = document.createElement("td")
+                    const bidSum = summaryObj["bidSumBaseSize"]? summaryObj["bidSumBaseSize"].toFixed(4): "";
+                    bidSumCell.textContent = bidSum
+                    row.appendChild(bidSumCell)
+
+                    const bidUseCell = document.createElement("td")
+                    const bidUse = summaryObj["bidSumBaseSize"]? 
+                        ((summaryObj["bidSumBaseSize"] + summaryObj["bidProfitBalance"]
+                         - summaryObj["bidBaseSizeBalance"])
+                         / (summaryObj["bidSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                    bidUseCell.textContent = bidUse
+                    row.appendChild(bidUseCell)
+
+                    const bidBalanceCell = document.createElement("td")
+                    const bidBalance = summaryObj["bidSumBaseSize"]? 
+                        (summaryObj["bidBaseSizeBalance"]
+                         / (summaryObj["bidSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                    bidBalanceCell.textContent = bidBalance
+                    row.appendChild(bidBalanceCell)
+
+                    const askSumCell = document.createElement("td")
+                    const askSum = summaryObj["askSumBaseSize"]? summaryObj["askSumBaseSize"].toFixed(4): "";
+                    askSumCell.textContent = askSum
+                    row.appendChild(askSumCell)
+
+                    const askUseCell = document.createElement("td")
+                    const askUse = summaryObj["askSumBaseSize"]? 
+                        ((summaryObj["askSumBaseSize"] + summaryObj["askProfitBalance"]
+                         - summaryObj["askBaseSizeBalance"])
+                         / (summaryObj["askSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                    askUseCell.textContent = askUse
+                    row.appendChild(askUseCell)
+
+                    const askBalanceCell = document.createElement("td")
+                    const askBalance = summaryObj["askSumBaseSize"]? 
+                        (summaryObj["askBaseSizeBalance"]
+                         / (summaryObj["askSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                    askBalanceCell.textContent = askBalance
+                    row.appendChild(askBalanceCell)
 
                     summariesTableBody.appendChild(row);
                 }
@@ -239,6 +282,13 @@
 
         let transactionList = []
 
+
+        function countDecimalPlaces(number) {
+                const stringNumber = String(number);
+                const decimalIndex = stringNumber.indexOf('.');
+                return decimalIndex === -1 ? 0 : stringNumber.length - decimalIndex - 1;
+            }
+
         function displayTransactionList(result) {
             const transactionTableBody = document.querySelector("#transactionTableBody");
             transactionTableBody.innerHTML = "";
@@ -282,16 +332,16 @@
                 row.appendChild(pnlCell);
 
                 const openRateCell = document.createElement("td");
-                openRateCell.textContent = transaction.openRate.toFixed(5);
+                openRateCell.textContent = transaction.openRate;
                 row.appendChild(openRateCell);
                 
                 const changeCell = document.createElement("td");
-                changeCell.textContent = change.toFixed(2) + '%';
+                changeCell.textContent = transaction.midRate + "(" + change.toFixed(1) + '%)';
                 row.appendChild(changeCell);
 
                 const closeCell = document.createElement("td");
                 let close = (transaction.closeRate - transaction.openRate) / transaction.openRate * 100
-                closeCell.textContent = close.toFixed(2) + '%';
+                closeCell.textContent = transaction.closeRate.toFixed(countDecimalPlaces(transaction.midRate)) + "(" + close.toFixed(1) + '%)';
                 row.appendChild(closeCell);
 
                 const baseSizeCell = document.createElement("td");
