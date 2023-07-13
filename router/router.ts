@@ -309,7 +309,7 @@ router.get('/transactionList',passwordAuthMiddleware, async (ctx: any) => {
     }
     let transactionList = await global.mongodb.collection('transaction').find( query,
         {id:1, batchId:1, symbol: 1, status:1, direction: 1, baseSize: 1,
-            maxBaseSize: 1, openrate: 1, midrate: 1,opportunity:1,
+            maxBaseSize: 1, openrate: 1, midrate: 1,opportunity:1,slide2:1,maxLost:1,
          pnl: 1, createtime: 1, endtime: 1 })
         .limit(200).sort({createtime:-1}).toArray()
     
@@ -327,6 +327,8 @@ router.get('/transactionList',passwordAuthMiddleware, async (ctx: any) => {
             midRate: transaction.midrate,
             closeRate: transaction.opportunity.closeRate,
             pnl: transaction.pnl,
+            closeType: transaction.opportunity.closeType,
+            slideP: transaction.slide2 / transaction.maxLost,
             createtime: transaction.createtime,
             endtime: transaction.endtime
         })
