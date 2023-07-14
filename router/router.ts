@@ -325,9 +325,8 @@ router.get('/transactionList',passwordAuthMiddleware, async (ctx: any) => {
             maxBaseSize: transaction.maxBaseSize,
             openRate: transaction.openrate,
             midRate: transaction.midrate,
-            closeRate: transaction.opportunity.closeRate,
+            opportunity: transaction.opportunity,
             pnl: transaction.pnl,
-            closeType: transaction.opportunity.closeType,
             slideP: transaction.slide2 / transaction.maxLost,
             createtime: transaction.createtime,
             endtime: transaction.endtime

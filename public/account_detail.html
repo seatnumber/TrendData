@@ -51,8 +51,7 @@
                 <th>midRate</th>
                 <th>closeRate</th>
                 <th>baseSize</th>
-                <th>createTime</th>
-                <th>endTime</th>
+                <th>time</th>
                 <th>closeType</th>
                 <th>slideP</th>
                 <th>batchId</th>
@@ -343,30 +342,30 @@
                 row.appendChild(changeCell);
 
                 const closeCell = document.createElement("td");
-                let close = (transaction.closeRate - transaction.openRate) / transaction.openRate * 100
-                closeCell.textContent = transaction.closeRate.toFixed(rateDecimal) + "(" + close.toFixed(1) + '%)';
+                let close = (transaction.opportunity.closeRate - transaction.openRate) / transaction.openRate * 100
+                closeCell.textContent = transaction.opportunity.closeRate.toFixed(rateDecimal) + "(" + close.toFixed(1) + '%)';
                 row.appendChild(closeCell);
 
                 const baseSizeCell = document.createElement("td");
                 baseSizeCell.textContent = transaction.baseSize.toFixed(2);
                 row.appendChild(baseSizeCell);
 
-                const createTimeCell = document.createElement("td");
-                createTimeCell.textContent = formatTime(new Date(transaction.createtime).getTime());
-                row.appendChild(createTimeCell);
-
-                const endTimeCell = document.createElement("td");
-                endTimeCell.textContent = transaction.endtime ? formatTime(new Date(transaction.createtime).getTime()) : '';
-                row.appendChild(endTimeCell);
+                const timeCell = document.createElement("td");
+                let text = formatTime(new Date(transaction.createtime).getTime()) +' - '
+                if(transaction.endtime) {
+                    text += formatTime(new Date(transaction.createtime).getTime())
+                }
+                timeCell.textContent = text;
+                row.appendChild(timeCell);
 
                 const closeTypeCell = document.createElement("td");
-                if(transaction.endtime) {
-                    closeTypeCell.textContent = transaction.closeType
+                if(transaction.opportunity.isClose) {
+                    closeTypeCell.textContent = transaction.opportunity.closeType
                 }
                 row.appendChild(closeTypeCell);
 
                 const slidePCell = document.createElement("td");
-                if(transaction.endtime) {
+                if(transaction.opportunity.isClose) {
                     let slideP = transaction.slideP * 100
                     slidePCell.textContent = transaction.slideP != undefined ? slideP.toFixed(2) + "%" : '';
                 }
