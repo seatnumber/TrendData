@@ -353,7 +353,7 @@
                 const timeCell = document.createElement("td");
                 let text = formatTime(new Date(transaction.createtime).getTime()) +' - '
                 if(transaction.endtime) {
-                    text += formatTime(new Date(transaction.createtime).getTime())
+                    text += formatTime(new Date(transaction.endtime).getTime())
                 }
                 timeCell.textContent = text;
                 row.appendChild(timeCell);
