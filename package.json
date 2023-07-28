@@ -7,6 +7,7 @@
     "@types/koa": "^2.13.5",
     "@types/koa-router": "^7.4.4",
     "@types/koa-static": "^4.0.2",
+    "date-fns": "^2.30.0",
     "koa": "^2.11.0",
     "koa-logger2": "^0.0.1",
     "koa-router": "^8.0.8",

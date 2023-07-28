@@ -61,6 +61,7 @@
         <tbody id="transactionTableBody"></tbody>
     </table>
     <button id="showMoreButton">显示更多</button>
+    <div id="profitChartContainer" style="width: 100%; height: 400px;"></div>
     <h2>Summaries</h2>
     <table id="summariesTable">
         <thead>
@@ -76,7 +77,8 @@
         </thead>
     </table>
 
-
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script>
 
         // 获取密码的函数
@@ -195,42 +197,42 @@
                     const summaryObj = result.sumObject[summaryKey];
 
                     const bidSumCell = document.createElement("td")
-                    const bidSum = summaryObj["bidSumBaseSize"]? summaryObj["bidSumBaseSize"].toFixed(4): "";
+                    const bidSum = summaryObj["bidSumBaseSize"] ? summaryObj["bidSumBaseSize"].toFixed(4) : "";
                     bidSumCell.textContent = bidSum
                     row.appendChild(bidSumCell)
 
                     const bidUseCell = document.createElement("td")
-                    const bidUse = summaryObj["bidSumBaseSize"]? 
+                    const bidUse = summaryObj["bidSumBaseSize"] ?
                         ((summaryObj["bidSumBaseSize"] + summaryObj["bidProfitBalance"]
-                         - summaryObj["bidBaseSizeBalance"])
-                         / (summaryObj["bidSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                            - summaryObj["bidBaseSizeBalance"])
+                            / (summaryObj["bidSumBaseSize"]) * 100).toFixed(1) + "%" : "";
                     bidUseCell.textContent = bidUse
                     row.appendChild(bidUseCell)
 
                     const bidBalanceCell = document.createElement("td")
-                    const bidBalance = summaryObj["bidSumBaseSize"]? 
+                    const bidBalance = summaryObj["bidSumBaseSize"] ?
                         (summaryObj["bidBaseSizeBalance"]
-                         / (summaryObj["bidSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                            / (summaryObj["bidSumBaseSize"]) * 100).toFixed(1) + "%" : "";
                     bidBalanceCell.textContent = bidBalance
                     row.appendChild(bidBalanceCell)
 
                     const askSumCell = document.createElement("td")
-                    const askSum = summaryObj["askSumBaseSize"]? summaryObj["askSumBaseSize"].toFixed(4): "";
+                    const askSum = summaryObj["askSumBaseSize"] ? summaryObj["askSumBaseSize"].toFixed(4) : "";
                     askSumCell.textContent = askSum
                     row.appendChild(askSumCell)
 
                     const askUseCell = document.createElement("td")
-                    const askUse = summaryObj["askSumBaseSize"]? 
+                    const askUse = summaryObj["askSumBaseSize"] ?
                         ((summaryObj["askSumBaseSize"] + summaryObj["askProfitBalance"]
-                         - summaryObj["askBaseSizeBalance"])
-                         / (summaryObj["askSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                            - summaryObj["askBaseSizeBalance"])
+                            / (summaryObj["askSumBaseSize"]) * 100).toFixed(1) + "%" : "";
                     askUseCell.textContent = askUse
                     row.appendChild(askUseCell)
 
                     const askBalanceCell = document.createElement("td")
-                    const askBalance = summaryObj["askSumBaseSize"]? 
+                    const askBalance = summaryObj["askSumBaseSize"] ?
                         (summaryObj["askBaseSizeBalance"]
-                         / (summaryObj["askSumBaseSize"]) * 100).toFixed(1) + "%" : "";
+                            / (summaryObj["askSumBaseSize"]) * 100).toFixed(1) + "%" : "";
                     askBalanceCell.textContent = askBalance
                     row.appendChild(askBalanceCell)
 
@@ -245,7 +247,7 @@
             const loadingMessageElement = document.querySelector("#loadingMessage");
             loadingMessageElement.textContent = "加载中...";
             loadingMessageElement.style.display = "block";
-            
+
             let password = getPassword()
             const data = await fetchAccountDetail(password);
             if (data.code === 10000) {
@@ -285,10 +287,10 @@
 
 
         function countDecimalPlaces(number) {
-                const stringNumber = String(number);
-                const decimalIndex = stringNumber.indexOf('.');
-                return decimalIndex === -1 ? 0 : stringNumber.length - decimalIndex - 1;
-            }
+            const stringNumber = String(number);
+            const decimalIndex = stringNumber.indexOf('.');
+            return decimalIndex === -1 ? 0 : stringNumber.length - decimalIndex - 1;
+        }
 
         function displayTransactionList(result) {
             const transactionTableBody = document.querySelector("#transactionTableBody");
@@ -305,10 +307,10 @@
 
                 const symbolCell = document.createElement("td");
                 symbolCell.textContent = transaction.symbol;
-                if(transaction.endtime == undefined) {
+                if (transaction.endtime == undefined) {
                     symbolCell.textContent += '~'
                 }
-                if(transaction.direction == 1) {
+                if (transaction.direction == 1) {
                     symbolCell.style.color = '#00CC00'
                 } else {
                     symbolCell.style.color = 'red'
@@ -336,7 +338,7 @@
                 const openRateCell = document.createElement("td");
                 openRateCell.textContent = transaction.openRate.toFixed(rateDecimal);
                 row.appendChild(openRateCell);
-                
+
                 const changeCell = document.createElement("td");
                 changeCell.textContent = transaction.midRate + "(" + change.toFixed(1) + '%)';
                 row.appendChild(changeCell);
@@ -351,28 +353,28 @@
                 row.appendChild(baseSizeCell);
 
                 const timeCell = document.createElement("td");
-                let text = formatTime(new Date(transaction.createtime).getTime()) +' - '
-                if(transaction.endtime) {
+                let text = formatTime(new Date(transaction.createtime).getTime()) + ' - '
+                if (transaction.endtime) {
                     text += formatTime(new Date(transaction.endtime).getTime())
                 }
                 timeCell.textContent = text;
                 row.appendChild(timeCell);
 
                 const closeTypeCell = document.createElement("td");
-                if(transaction.opportunity.isClose) {
+                if (transaction.opportunity.isClose) {
                     closeTypeCell.textContent = transaction.opportunity.closeType
                 }
                 row.appendChild(closeTypeCell);
 
                 const slidePCell = document.createElement("td");
-                if(transaction.opportunity.isClose) {
+                if (transaction.opportunity.isClose) {
                     let slideP = transaction.slideP * 100
                     slidePCell.textContent = transaction.slideP != undefined ? slideP.toFixed(2) + "%" : '';
                 }
                 row.appendChild(slidePCell);
 
                 const batchIdCell = document.createElement("td");
-                if(batchCut) {
+                if (batchCut) {
                     batchIdCell.textContent = transaction.batchId.substring(servicename.length);
                 } else {
                     batchIdCell.textContent = transaction.batchId;
@@ -406,6 +408,163 @@
         }
 
         loadTransactionList();
+
+        async function fetchProfitList(password) {
+            const response = await fetch(`http://SERVER_IP:8081/profitList?servicename=${servicename}`, {
+                method: "GET",
+                headers: {
+                    "x-password": password,
+                },
+            });
+            const data = await response.json();
+            return data;
+        }
+
+        function displayProfitChart(profitList) {
+            let chartData = profitList.result.map((item) => ({
+                x: new Date(item.createtime).getTime(),
+                y: item.profit,
+                maxDrawdown: item.maxDrawdown
+            }));
+            const chartOptions = {
+                chart: {
+                    type: 'line',
+                },
+                title: {
+                    text: 'Profit Chart',
+                },
+                xAxis: {
+                    type: 'datetime',
+                    labels: {
+                        formatter: function () {
+                            return Highcharts.dateFormat('%y-%m-%d', this.value);
+                        },
+                    },
+                },
+                yAxis: [
+                    {
+                        title: {
+                            text: 'Profit',
+                        },
+                    },
+                    {
+                        title: {
+                            text: 'MaxDrawdown',
+                        },
+                        opposite: true,
+                        visible: false, // Set the default visibility to false
+                    },
+                ],
+                series: [
+                    {
+                        name: 'Profit',
+                        data: chartData.map((item) => [item.x, item.y]), // Show only profit on the initial chart
+                        color: '#0070C0',
+                        yAxis: 0, // Corresponds to the first y-axis (index 0)
+                    },
+                    {
+                        name: 'MaxDrawdown',
+                        data: chartData.map((item) => [item.x, item.maxDrawdown]),
+                        color: '#FF0000',
+                        yAxis: 0, // Corresponds to the second y-axis (index 1)
+                        visible: false, // Set the default visibility to false
+                    },
+                ],
+                exporting: {
+                    buttons: {
+                        customButton1: {
+                            text: '近3个月',
+                            onclick: function () {
+                                // Filter data for the last 3 months
+                                const threeMonthsAgo = new Date();
+                                threeMonthsAgo.setUTCMonth(threeMonthsAgo.getUTCMonth() - 3);
+                                chartData = profitList.result.map((item) => ({
+                                    x: new Date(item.createtime).getTime(),
+                                    y: item.profit,
+                                    maxDrawdown: item.maxDrawdown
+                                }));
+                                let data = chartData.filter((item) => item.x >= threeMonthsAgo.getTime())
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: data.map((item) => [item.x, item.y]),
+                                        },
+                                        {
+                                            data: data.map((item) => [item.x, item.maxDrawdown]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                        customButton2: {
+                            text: '近一年',
+                            onclick: function () {
+                                // Filter data for the last year
+                                const oneYearAgo = new Date();
+                                oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 1);
+                                chartData = profitList.result.map((item) => ({
+                                    x: new Date(item.createtime).getTime(),
+                                    y: item.profit,
+                                    maxDrawdown: item.maxDrawdown
+                                }));
+                                let data = chartData.filter((item) => item.x >= oneYearAgo.getTime())
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: data.map((item) => [item.x, item.y]),
+                                        },
+                                        {
+                                            data: data.map((item) => [item.x, item.maxDrawdown]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                        customButton3: {
+                            text: '全部',
+                            onclick: function () {
+                                chartData = profitList.result.map((item) => ({
+                                    x: new Date(item.createtime).getTime(),
+                                    y: item.profit,
+                                    maxDrawdown: item.maxDrawdown
+                                }));
+                                let data = chartData
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: data.map((item) => [item.x, item.y]),
+                                        },
+                                        {
+                                            data: data.map((item) => [item.x, item.maxDrawdown]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                    },
+                },
+            };
+
+            Highcharts.chart('profitChartContainer', chartOptions);
+        }
+
+        async function loadProfitList() {
+            let password = getPassword();
+            const data = await fetchProfitList(password);
+            if (data.code === 10000) {
+                displayProfitChart(data);
+            } else {
+                console.log("Failed to fetch profit data");
+            }
+        }
+
+        loadProfitList();
     </script>
 </body>
 

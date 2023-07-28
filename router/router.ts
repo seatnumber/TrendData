@@ -367,13 +367,23 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
         let resultList = []
         let item: any = {
             date: undefined
-        } 
+        }
+        let maxProfit = 0
+        let maxDrawdown = 0
+        let profit = 0
+        let drawdown = 0
         for(let i = 0;i< profitList.length;i++) {
             let profitItem = profitList[i]
             if(profitItem.owner == 'seatnumber') {
                 let createtime = profitItem.createtime
                 let date = createtime.getDate()
                 if(item.date != date) {
+                    maxProfit = Math.max(maxProfit, profit)
+                    drawdown = maxProfit - profit
+                    maxDrawdown = Math.max(maxDrawdown, drawdown)
+                    item.profit = profit
+                    item.maxDrawdown = maxDrawdown
+                    profit = 0
                     item = {
                         servicename: 'seatnumber',
                         profit: 0,
@@ -384,7 +394,7 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
                     }
                     resultList.push(item)
                 }
-                item.profit += profitItem.profit
+                profit += profitItem.profit
             }
         }
         ctx.body = {
