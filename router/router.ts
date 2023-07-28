@@ -338,3 +338,59 @@ router.get('/transactionList',passwordAuthMiddleware, async (ctx: any) => {
         updatetime: new Date()
     }
 })
+
+router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
+    let { servicename } = ctx.query
+    if (servicename != 'seatnumber') {
+        let query: any = {
+            createtime: { $gt: new Date(Date.now() - 94608000000) },
+            dayLog: true,
+            servicename: servicename,
+        }
+        let profitList = await global.mongodb.collection('account').find(query,
+            { servicename: 1, profit: 1, maxDrawdown: 1, createtime: 1, owner: 1 })
+            .sort({ createtime: 1 }).toArray()
+        ctx.body = {
+            code: 10000,
+            result: profitList,
+            updatetime: new Date()
+        }
+    } else {
+        let query: any = {
+            createtime: { $gt: new Date(Date.now() - 94608000000) },
+            dayLog: true
+        }
+        let profitList = await global.mongodb.collection('account').find(query,
+            { servicename: 1, profit: 1, maxDrawdown: 1, createtime: 1, owner: 1 })
+            .sort({ createtime: 1 }).toArray()
+
+        let resultList = []
+        let item: any = {
+            date: undefined
+        } 
+        for(let i = 0;i< profitList.length;i++) {
+            let profitItem = profitList[i]
+            if(profitItem.owner == 'seatnumber') {
+                let createtime = profitItem.createtime
+                let date = createtime.getDate()
+                if(item.date != date) {
+                    item = {
+                        servicename: 'seatnumber',
+                        profit: 0,
+                        maxDrawdown: 0,
+                        createtime: createtime,
+                        owner: 'seatnumber',
+                        date: date
+                    }
+                    resultList.push(item)
+                }
+                item.profit += profitItem.profit
+            }
+        }
+        ctx.body = {
+            code: 10000,
+            result: resultList,
+            updatetime: new Date()
+        }
+    }
+})
