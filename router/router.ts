@@ -397,6 +397,8 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
                 profit += profitItem.profit
             }
         }
+        resultList[resultList.length - 1].profit = profit
+        resultList[resultList.length - 1].maxDrawdown = maxDrawdown
         ctx.body = {
             code: 10000,
             result: resultList,
