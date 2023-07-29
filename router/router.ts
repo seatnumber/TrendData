@@ -343,65 +343,110 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
     let { servicename } = ctx.query
     if (servicename != 'seatnumber') {
         let query: any = {
-            createtime: { $gt: new Date(Date.now() - 94608000000) },
             dayLog: true,
-            servicename: servicename,
+            servicename: servicename
         }
+        let serviceconfig = await global.mongodb.collection('serviceconfig').findOne({
+            servicename: servicename
+        })
         let profitList = await global.mongodb.collection('account').find(query,
-            { servicename: 1, profit: 1, maxDrawdown: 1, createtime: 1, owner: 1 })
-            .sort({ createtime: 1 }).toArray()
+            { servicename: 1, profit: 1, createtime: 1, owner: 1 })
+            .sort({ createtime: 1 }).limit(1095).toArray()
+
+        let profitObject = await global.mongodb.collection('account').find({servicename: servicename}
+            ,{ servicename: 1, profit: 1, createtime: 1, owner: 1 })
+            .sort({ createtime: -1 }).limit(1).toArray()
+        profitObject = profitObject[0]
+        profitList.push(profitObject)
         ctx.body = {
             code: 10000,
-            result: profitList,
+            result: {
+                serviceconfig: {
+                    initBaseSize: serviceconfig.initBaseSize
+                },
+                profitList: profitList
+            },
             updatetime: new Date()
         }
     } else {
         let query: any = {
-            createtime: { $gt: new Date(Date.now() - 94608000000) },
             dayLog: true
         }
-        let profitList = await global.mongodb.collection('account').find(query,
-            { servicename: 1, profit: 1, maxDrawdown: 1, createtime: 1, owner: 1 })
-            .sort({ createtime: 1 }).toArray()
-
-        let resultList = []
-        let item: any = {
-            date: undefined
+        let serviceconfigs = await global.mongodb.collection('serviceconfig').find({
+            owner: 'seatnumber'
+        }).toArray()
+        let initBaseSize = 0
+        for(let serviceconfig of serviceconfigs) {
+            if(serviceconfig.status == 'enable') {
+                initBaseSize += serviceconfig.initBaseSize
+            }
         }
-        let maxProfit = 0
-        let maxDrawdown = 0
+        let profitList = await global.mongodb.collection('account').find(query,
+            { servicename: 1, profit: 1, createtime: 1, owner: 1 })
+            .sort({ createtime: 1 }).limit(1095).toArray()
+        
+        let resultList = []
+        let date = undefined
         let profit = 0
-        let drawdown = 0
+        let item: any = {}
         for(let i = 0;i< profitList.length;i++) {
             let profitItem = profitList[i]
             if(profitItem.owner == 'seatnumber') {
                 let createtime = profitItem.createtime
-                let date = createtime.getDate()
-                if(item.date != date) {
-                    maxProfit = Math.max(maxProfit, profit)
-                    drawdown = maxProfit - profit
-                    maxDrawdown = Math.max(maxDrawdown, drawdown)
+                let thisDate = createtime.getDate()
+                if(date != thisDate) {
                     item.profit = profit
-                    item.maxDrawdown = maxDrawdown
                     profit = 0
                     item = {
                         servicename: 'seatnumber',
                         profit: 0,
-                        maxDrawdown: 0,
                         createtime: createtime,
-                        owner: 'seatnumber',
-                        date: date
+                        owner: 'seatnumber'
                     }
+                    date = thisDate
                     resultList.push(item)
                 }
                 profit += profitItem.profit
             }
         }
         resultList[resultList.length - 1].profit = profit
-        resultList[resultList.length - 1].maxDrawdown = maxDrawdown
+
+        let profitObjects = await global.mongodb.collection('account').find({ }
+            , { servicename: 1, profit: 1, createtime: 1, owner: 1 })
+            .sort({ createtime: -1 }).limit(serviceconfigs.length * 2).toArray()
+        
+        let serviceSet = new Set()
+        for(let serviceconfig of serviceconfigs) {
+            if(serviceconfig.status == 'enable') {
+                serviceSet.add(serviceconfig.servicename)
+            }
+        }
+        let lastItem: any = {
+            servicename: 'seatnumber',
+            profit: 0,
+            createtime: undefined,
+            owner: 'seatnumber'
+        }
+        for(let profitObject of profitObjects) {
+            if(serviceSet.has(profitObject.servicename)) {
+                lastItem.profit += profitObject.profit
+                lastItem.createtime = profitObject.createtime
+                serviceSet.delete(profitObject.servicename)
+            }
+            if(serviceSet.size == 0) {
+                break
+            }
+        }
+        resultList.push(lastItem)
+        
         ctx.body = {
             code: 10000,
-            result: resultList,
+            result: {
+                serviceconfig: {
+                    initBaseSize: initBaseSize
+                },
+                profitList: resultList
+            },
             updatetime: new Date()
         }
     }

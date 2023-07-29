@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Detail</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="servicename" class="center"></h1>
+    <p id="loadingMessage">加载中...</p>
+    <div id="profitChartContainer" style="width: 100%; height: 400px;"></div>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <script>
+        // 获取密码的函数
+        function getPassword() {
+            let password = localStorage.getItem("password");
+            if (!password) {
+                password = prompt("请输入密码");
+                localStorage.setItem("password", password);
+            }
+            return password;
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const servicename = urlParams.get('servicename');
+
+        document.querySelector("#servicename").textContent = servicename;
+        function convertProfitList(initBaseSize, profitList, firstTime) {
+            let maxDrawdown = 0
+            let maxProfit = 0
+            let firstProfitO = undefined
+            let newProfitList = []
+            for(let i = 0;i<profitList.length; i++) {
+                let profitObject = profitList[i]
+                let createtime = new Date(profitObject.createtime).getTime()
+                if (createtime >= firstTime) {
+                    firstProfitO = firstProfitO == undefined ? profitObject : firstProfitO
+                    let newProfitObject = {
+                        createtime: createtime,
+                        profit: profitObject.profit - firstProfitO.profit,
+                        profitP: 0
+                    }
+                    newProfitObject.profitP = newProfitObject.profit / initBaseSize
+                    maxProfit = Math.max(newProfitObject.profit, maxProfit)
+                    let drawdown = maxProfit - newProfitObject.profit
+                    maxDrawdown = Math.max(drawdown, maxDrawdown)
+                    newProfitObject.maxDrawdown = maxDrawdown
+                    newProfitObject.maxDrawdownP = maxDrawdown / initBaseSize
+                    newProfitList.push(newProfitObject)
+                }
+            }
+            return newProfitList
+        }
+
+        async function fetchProfitList(password) {
+            const response = await fetch(`http://SERVER_IP:8081/profitList?servicename=${servicename}`, {
+                method: "GET",
+                headers: {
+                    "x-password": password,
+                },
+            });
+            const data = await response.json();
+            return data;
+        }
+
+        function displayProfitChart(result) {
+            let serviceconfig = result.serviceconfig
+            let profitList = result.profitList
+            let chartData = convertProfitList(serviceconfig.initBaseSize, profitList, 0)
+            const chartOptions = {
+                chart: {
+                    type: 'line',
+                },
+                title: {
+                    text: 'Profit Chart',
+                },
+                xAxis: {
+                    type: 'datetime',
+                    labels: {
+                        formatter: function () {
+                            return Highcharts.dateFormat('%y-%m-%d', this.value);
+                        },
+                    },
+                },
+                yAxis: [
+                    {
+                        title: {
+                            text: 'Profit',
+                        },
+                    },
+                    {
+                        title: {
+                            text: 'ProfitP',
+                        },
+                        labels: {
+                            formatter: function () {
+                                return this.value * 100 + '%'; // Format Y-axis value as percentage
+                            },
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: 'Profit',
+                        data: chartData.map((item) => [item.createtime, item.profit]), // Show only profit on the initial chart
+                        color: '#0070C0',
+                        yAxis: 0, // Corresponds to the first y-axis (index 0)
+                        visible: false, // Set the default visibility to false
+                    },{
+                        name: 'ProfitP',
+                        data: chartData.map((item) => [item.createtime, item.profitP]), // Show only profit on the initial chart
+                        color: '#0070C0',
+                        yAxis: 1, // Corresponds to the first y-axis (index 0)
+                        visible: true, // Set the default visibility to false
+                    },
+                    {
+                        name: 'MaxDrawdown',
+                        data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                        color: '#FF0000',
+                        yAxis: 1, // Corresponds to the second y-axis (index 1)
+                        visible: true, // Set the default visibility to false
+                    },
+                ],
+                exporting: {
+                    buttons: {
+                        customButton0: {
+                            text: '近1个月',
+                            onclick: function () {
+                                // Filter data for the last 3 months
+                                const monthsAgo = new Date();
+                                monthsAgo.setUTCMonth(monthsAgo.getUTCMonth() - 1);
+                                chartData = convertProfitList(serviceconfig.initBaseSize, profitList, monthsAgo.getTime())
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profit]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profitP]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                        customButton1: {
+                            text: '近3个月',
+                            onclick: function () {
+                                // Filter data for the last 3 months
+                                const threeMonthsAgo = new Date();
+                                threeMonthsAgo.setUTCMonth(threeMonthsAgo.getUTCMonth() - 3);
+                                chartData = convertProfitList(serviceconfig.initBaseSize,profitList, threeMonthsAgo.getTime())
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profit]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profitP]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                        customButton2: {
+                            text: '近一年',
+                            onclick: function () {
+                                // Filter data for the last year
+                                const oneYearAgo = new Date();
+                                oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 1);
+                                
+                                chartData = convertProfitList(serviceconfig.initBaseSize, profitList, oneYearAgo.getTime())
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profit]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profitP]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                        customButton3: {
+                            text: '近三年',
+                            onclick: function () {
+                                // Filter data for the last year
+                                const oneYearAgo = new Date();
+                                oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 3);
+                                
+                                chartData = convertProfitList(serviceconfig.initBaseSize, profitList, oneYearAgo.getTime())
+
+                                // Update the chart with the filtered data
+                                this.update({
+                                    series: [
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profit]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.profitP]),
+                                        },
+                                        {
+                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                    },
+                },
+            };
+
+            Highcharts.chart('profitChartContainer', chartOptions);
+        }
+
+        async function loadProfitList() {
+            // Show the loading message 
+            const loadingMessageElement = document.querySelector("#loadingMessage");
+            loadingMessageElement.textContent = "加载中...";
+            loadingMessageElement.style.display = "block";
+            let password = getPassword();
+            const data = await fetchProfitList(password);
+            if (data.code === 10000) {
+                // Hide the loading message
+                loadingMessageElement.style.display = "none";
+                displayProfitChart(data.result);
+            } else {
+                loadingMessageElement.textContent = "请求失败";
+                console.log("Failed to fetch profit data");
+            }
+        }
+
+        loadProfitList();
+    </script>
+</body>
