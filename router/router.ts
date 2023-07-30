@@ -425,31 +425,21 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
         }
         resultList[resultList.length - 1].profit = profit
         
-
-        let profitObjects = await global.mongodb.collection('account').find({ }
-            , { servicename: 1, profit: 1, createtime: 1, owner: 1 })
-            .sort({ createtime: -1 }).limit(serviceconfigs.length * 2).toArray()
-        
-        let serviceSet = new Set()
-        for(let serviceconfig of serviceconfigs) {
-            if(serviceconfig.status == 'enable') {
-                serviceSet.add(serviceconfig.servicename)
-            }
-        }
         let lastItem: any = {
             servicename: 'seatnumber',
             profit: 0,
             createtime: undefined,
             owner: 'seatnumber'
         }
-        for(let profitObject of profitObjects) {
-            if(serviceSet.has(profitObject.servicename)) {
+        for(let serviceconfig of serviceconfigs) {
+            if(serviceconfig.status == 'enable') {
+                let servicename = serviceconfig.servicename
+                let profitObject = await global.mongodb.collection('account').find({servicename: servicename}
+                    ,{ servicename: 1, profit: 1, createtime: 1, owner: 1 })
+                    .sort({ createtime: -1 }).limit(1).toArray()
+                profitObject = profitObject[0]
                 lastItem.profit += profitObject.profit
                 lastItem.createtime = profitObject.createtime
-                serviceSet.delete(profitObject.servicename)
-            }
-            if(serviceSet.size == 0) {
-                break
             }
         }
         resultList.push(lastItem)
