@@ -77,6 +77,8 @@
                     maxProfit = Math.max(newProfitObject.profit, maxProfit)
                     let drawdown = maxProfit - newProfitObject.profit
                     maxDrawdown = Math.max(drawdown, maxDrawdown)
+                    newProfitObject.drawdown = drawdown
+                    newProfitObject.drawdownP = drawdown / initBaseSize
                     newProfitObject.maxDrawdown = maxDrawdown
                     newProfitObject.maxDrawdownP = maxDrawdown / initBaseSize
                     newProfitList.push(newProfitObject)
@@ -158,8 +160,8 @@
                         visible: true, // Set the default visibility to false
                     },
                     {
-                        name: 'MaxDrawdown',
-                        data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                        name: 'drawdownP',
+                        data: chartData.map((item) => [item.createtime, item.drawdownP]),
                         color: '#FF0000',
                         yAxis: 1, // Corresponds to the second y-axis (index 1)
                         visible: true, // Set the default visibility to false
