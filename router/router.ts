@@ -351,8 +351,10 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
         })
         let profitList = await global.mongodb.collection('account').find(query,
             { servicename: 1, profit: 1, createtime: 1, owner: 1 })
-            .sort({ createtime: 1 }).limit(1095).toArray()
-
+            .sort({ createtime: -1 }).limit(1095).toArray()
+            profitList.sort(function(a: any, b: any){
+                return a.createtime > b.createtime ? 1: -1
+            })
         let profitObject = await global.mongodb.collection('account').find({servicename: servicename}
             ,{ servicename: 1, profit: 1, createtime: 1, owner: 1 })
             .sort({ createtime: -1 }).limit(1).toArray()
@@ -369,32 +371,39 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
             updatetime: new Date()
         }
     } else {
-        let query: any = {
-            dayLog: true
-        }
         let serviceconfigs = await global.mongodb.collection('serviceconfig').find({
             owner: 'seatnumber'
         }).toArray()
         let initBaseSize = 0
+        let serviceArray = []
         for(let serviceconfig of serviceconfigs) {
             if(serviceconfig.status == 'enable') {
                 initBaseSize += serviceconfig.initBaseSize
+                serviceArray.push(serviceconfig.servicename)
             }
         }
-        let profitList = await global.mongodb.collection('account').find(query,
-            { servicename: 1, profit: 1, createtime: 1, owner: 1 })
-            .sort({ createtime: 1 }).limit(1095).toArray()
-        
+        let query: any = {
+            servicename: {$in: serviceArray},
+            dayLog: true
+        }
+        let end = false
+        let createtime = new Date(Date.now() - 94608000000)
         let resultList = []
         let date = undefined
         let profit = 0
         let item: any = {}
-        for(let i = 0;i< profitList.length;i++) {
-            let profitItem = profitList[i]
-            if(profitItem.owner == 'seatnumber') {
+        while(!end) {
+            query.createtime = {
+                $gt: createtime
+            }
+            let profitList = await global.mongodb.collection('account').find(query,
+                { servicename: 1, profit: 1, createtime: 1, owner: 1 })
+                .sort({ createtime: 1 }).limit(1095).toArray()
+            for (let i = 0; i < profitList.length; i++) {
+                let profitItem = profitList[i]
                 let createtime = profitItem.createtime
                 let thisDate = createtime.getDate()
-                if(date != thisDate) {
+                if (date != thisDate) {
                     item.profit = profit
                     profit = 0
                     item = {
@@ -408,8 +417,14 @@ router.get('/profitList', passwordAuthMiddleware, async (ctx: any) => {
                 }
                 profit += profitItem.profit
             }
+            if(profitList.length == 0) {
+                end = true
+            } else {
+                createtime = profitList[profitList.length - 1].createtime
+            }
         }
         resultList[resultList.length - 1].profit = profit
+        
 
         let profitObjects = await global.mongodb.collection('account').find({ }
             , { servicename: 1, profit: 1, createtime: 1, owner: 1 })

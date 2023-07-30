@@ -34,6 +34,13 @@
     <p id="loadingMessage">加载中...</p>
     <div id="profitChartContainer" style="width: 100%; height: 400px;"></div>
 
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" name="startDate">
+    
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate" name="endDate">
+    
+    <button id="updateChartButton">Update Chart</button>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
@@ -51,7 +58,7 @@
         const servicename = urlParams.get('servicename');
 
         document.querySelector("#servicename").textContent = servicename;
-        function convertProfitList(initBaseSize, profitList, firstTime) {
+        function convertProfitList(initBaseSize, profitList, startTime, endTime) {
             let maxDrawdown = 0
             let maxProfit = 0
             let firstProfitO = undefined
@@ -59,7 +66,7 @@
             for(let i = 0;i<profitList.length; i++) {
                 let profitObject = profitList[i]
                 let createtime = new Date(profitObject.createtime).getTime()
-                if (createtime >= firstTime) {
+                if (createtime >= startTime && createtime < endTime) {
                     firstProfitO = firstProfitO == undefined ? profitObject : firstProfitO
                     let newProfitObject = {
                         createtime: createtime,
@@ -88,11 +95,22 @@
             const data = await response.json();
             return data;
         }
+        let Chart
+
+        const today = new Date();
+        // Set the default value for the startDate input
+        today.setUTCDate(today.getUTCDate() + 1)
+        document.getElementById('endDate').value = today.toISOString().slice(0, 10)
+
+        const monthsAgo = new Date();
+        monthsAgo.setUTCMonth(today.getUTCMonth() - 6);
+        // Set the default value for the startDate input
+        document.getElementById('startDate').value = monthsAgo.toISOString().slice(0, 10)
 
         function displayProfitChart(result) {
             let serviceconfig = result.serviceconfig
             let profitList = result.profitList
-            let chartData = convertProfitList(serviceconfig.initBaseSize, profitList, 0)
+            let chartData = convertProfitList(serviceconfig.initBaseSize, profitList, 0, Date.now())
             const chartOptions = {
                 chart: {
                     type: 'line',
@@ -155,22 +173,7 @@
                                 // Filter data for the last 3 months
                                 const monthsAgo = new Date();
                                 monthsAgo.setUTCMonth(monthsAgo.getUTCMonth() - 1);
-                                chartData = convertProfitList(serviceconfig.initBaseSize, profitList, monthsAgo.getTime())
-
-                                // Update the chart with the filtered data
-                                this.update({
-                                    series: [
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profit]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profitP]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
-                                        },
-                                    ],
-                                });
+                                updateChart(serviceconfig, profitList, monthsAgo.getTime(), Date.now())
                             },
                         },
                         customButton1: {
@@ -179,22 +182,8 @@
                                 // Filter data for the last 3 months
                                 const threeMonthsAgo = new Date();
                                 threeMonthsAgo.setUTCMonth(threeMonthsAgo.getUTCMonth() - 3);
-                                chartData = convertProfitList(serviceconfig.initBaseSize,profitList, threeMonthsAgo.getTime())
-
-                                // Update the chart with the filtered data
-                                this.update({
-                                    series: [
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profit]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profitP]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
-                                        },
-                                    ],
-                                });
+                                
+                                updateChart(serviceconfig, profitList, threeMonthsAgo.getTime(), Date.now())
                             },
                         },
                         customButton2: {
@@ -204,22 +193,7 @@
                                 const oneYearAgo = new Date();
                                 oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 1);
                                 
-                                chartData = convertProfitList(serviceconfig.initBaseSize, profitList, oneYearAgo.getTime())
-
-                                // Update the chart with the filtered data
-                                this.update({
-                                    series: [
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profit]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profitP]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
-                                        },
-                                    ],
-                                });
+                                updateChart(serviceconfig, profitList, oneYearAgo.getTime(), Date.now())
                             },
                         },
                         customButton3: {
@@ -229,29 +203,43 @@
                                 const oneYearAgo = new Date();
                                 oneYearAgo.setUTCFullYear(oneYearAgo.getUTCFullYear() - 3);
                                 
-                                chartData = convertProfitList(serviceconfig.initBaseSize, profitList, oneYearAgo.getTime())
-
-                                // Update the chart with the filtered data
-                                this.update({
-                                    series: [
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profit]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.profitP]),
-                                        },
-                                        {
-                                            data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
-                                        },
-                                    ],
-                                });
+                                updateChart(serviceconfig, profitList, oneYearAgo.getTime(), Date.now())
                             },
                         },
                     },
                 },
             };
 
-            Highcharts.chart('profitChartContainer', chartOptions);
+            chart = Highcharts.chart('profitChartContainer', chartOptions);
+
+
+            // Set up event listener for the update button
+            document.getElementById('updateChartButton').addEventListener('click', function() {
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                updateChart(serviceconfig, profitList, startDate.getTime(), endDate.getTime())
+            });
+
+        }
+
+        
+        function updateChart(serviceconfig, profitList, startTime, endTime) {
+            let chartData = convertProfitList(serviceconfig.initBaseSize, profitList, startTime, endTime)
+
+            // Update the chart with the filtered data
+            chart.update({
+                series: [
+                    {
+                        data: chartData.map((item) => [item.createtime, item.profit]),
+                    },
+                    {
+                        data: chartData.map((item) => [item.createtime, item.profitP]),
+                    },
+                    {
+                        data: chartData.map((item) => [item.createtime, item.maxDrawdownP]),
+                    },
+                ],
+            });
         }
 
         async function loadProfitList() {
