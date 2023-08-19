@@ -298,14 +298,14 @@ function getSeatnumberAccount(accountList: any[]) {
 router.get('/transactionList',passwordAuthMiddleware, async (ctx: any) => {
     let { servicename } = ctx.query
     let query: any = {servicename: servicename,
-        createtime: {$gt: new Date(Date.now() - 172800000)}}
+        createtime: {$gt: new Date(Date.now() - 345600000)}}
     if(servicename == 'seatnumber') {
         let serviceList = await global.mongodb.collection('serviceconfig').find({owner: 'seatnumber', status:'enable'}).toArray()
         let servicenameList = []
         for(let service of serviceList) {
             servicenameList.push(service.servicename)
         }
-        query = { servicename: {$in: servicenameList}, createtime: {$gt: new Date(Date.now() - 172800000)}}
+        query = { servicename: {$in: servicenameList}, createtime: {$gt: new Date(Date.now() - 345600000)}}
     }
     let transactionList = await global.mongodb.collection('transaction').find( query,
         {id:1, batchId:1, symbol: 1, status:1, direction: 1, baseSize: 1,
